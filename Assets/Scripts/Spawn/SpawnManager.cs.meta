@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: 7138afb56268e314e8da556addd4d026
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - playerPrefab: {fileID: 7848458828242085336, guid: 2ac7f38a26d2c7c40be0b4b51a45973b, type: 3}
+  - playerSpawn: {instanceID: 0}
+  - npcPrefab: {fileID: 8334597324787929647, guid: 4296e36b6e34d114e928844be5df51e2, type: 3}
+  - movementBounds: {instanceID: 0}
+  - npcsParent: {instanceID: 0}
+  - playerParent: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
