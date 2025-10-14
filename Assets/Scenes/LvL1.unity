@@ -4586,6 +4586,51 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 271612621}
   m_Mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &275075900
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 275075902}
+  - component: {fileID: 275075901}
+  m_Layer: 0
+  m_Name: SunbeamManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &275075901
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 275075900}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f5ac4b7dbfadd4076b52caa66099eac2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sunbeamPrefab: {fileID: 6024870411985145810, guid: b345ddb0fb5e942b8afa873abc69f431, type: 3}
+--- !u!4 &275075902
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 275075900}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 75.27, y: 1.1599998, z: 2.3}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &278263957
 GameObject:
   m_ObjectHideFlags: 0
@@ -9312,6 +9357,7 @@ GameObject:
   - component: {fileID: 519420031}
   - component: {fileID: 519420029}
   - component: {fileID: 519420030}
+  - component: {fileID: 519420033}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -9437,6 +9483,21 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 45, y: 45, z: 0}
+--- !u!114 &519420033
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 519420028}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b286d4a863fd1496e91c755103681417, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  npcLayer:
+    serializedVersion: 2
+    m_Bits: 64
 --- !u!1 &523923741
 GameObject:
   m_ObjectHideFlags: 0
@@ -12460,7 +12521,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playerPrefab: {fileID: 117394769603656870, guid: 2ac7f38a26d2c7c40be0b4b51a45973b, type: 3}
   playerSpawn: {fileID: 1368778524}
-  npcPrefab: {fileID: 8389651271400930577, guid: 4296e36b6e34d114e928844be5df51e2, type: 3}
+  npcPrefab: {fileID: 117394769603656870, guid: 0c475097a2bcd4d2fa0dc3f2f38eaa35, type: 3}
   civilianCount: 5
   impostorCount: 2
   npcSpawns:
@@ -36382,3 +36443,4 @@ SceneRoots:
   - {fileID: 1961918919}
   - {fileID: 1799080514}
   - {fileID: 570833955}
+  - {fileID: 275075902}
