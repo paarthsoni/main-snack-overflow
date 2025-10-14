@@ -11,26 +11,25 @@ public class TimerController : MonoBehaviour
     public GameObject gameOverPanel;
 
     private bool isGameOver = false;
+    private bool isRunning = false;   // NEW
 
     void Start()
     {
         currentTime = startTime;
         gameOverPanel.SetActive(false);
+        UpdateTimerUI();              // show 03:00 initially
+        isRunning = false;            // wait for StartTimer()
     }
 
     void Update()
     {
-        if (isGameOver) return;
+        if (isGameOver || !isRunning) return;
 
         currentTime -= Time.deltaTime;
         currentTime = Mathf.Clamp(currentTime, 0, startTime);
 
         UpdateTimerUI();
-
-        if (currentTime <= 0)
-        {
-            GameOver();
-        }
+        if (currentTime <= 0) GameOver();
     }
 
     void UpdateTimerUI()
@@ -43,11 +42,21 @@ public class TimerController : MonoBehaviour
     void GameOver()
     {
         isGameOver = true;
+        isRunning = false;
         gameOverPanel.SetActive(true);
-        Time.timeScale = 0f; // pause game
+        Time.timeScale = 0f;
     }
 
-    // Called by Retry button in UI
+    public void StartTimer(float seconds = -1f)  // NEW
+    {
+        if (seconds > 0f) startTime = seconds;
+        currentTime = startTime;
+        isGameOver = false;
+        gameOverPanel.SetActive(false);
+        UpdateTimerUI();
+        isRunning = true;
+    }
+
     public void Retry()
     {
         Time.timeScale = 1f;
