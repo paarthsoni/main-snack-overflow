@@ -56,5 +56,5 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "CSCI-526_Snack Overflow.sln"
+    "dotnet.defaultSolution": "main-snack-overflow.sln"
 }
