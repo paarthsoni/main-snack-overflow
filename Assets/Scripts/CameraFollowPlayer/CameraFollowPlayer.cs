@@ -37,7 +37,7 @@ public class CameraFollowPlayer : MonoBehaviour
         if (!_offsetSet)
         {
             _offset = useCurrentOffset ? (transform.position - target.position) : fallbackOffset;
-            if (Mathf.Abs(_offset.z) < 0.01f) _offset.z = -10f; // safety for ortho
+            if (Mathf.Abs(_offset.z) < 0.01f) _offset.z = -10f; 
             _offsetSet = true;
         }
     }

@@ -10446,7 +10446,7 @@ Camera:
   far clip plane: 1000
   field of view: 34
   orthographic: 1
-  orthographic size: 21.43
+  orthographic size: 14
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -10505,8 +10505,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 0}
-  useCurrentOffset: 1
-  fallbackOffset: {x: 30, y: 50, z: -30}
+  useCurrentOffset: 0
+  fallbackOffset: {x: -30, y: 50, z: -30}
   smoothTime: 0.25
 --- !u!1 &523923741
 GameObject:
