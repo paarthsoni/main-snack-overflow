@@ -1655,7 +1655,7 @@ Transform:
   m_GameObject: {fileID: 114193404}
   serializedVersion: 2
   m_LocalRotation: {x: 0.46193978, y: 0.19134173, z: 0.19134173, w: 0.84462327}
-  m_LocalPosition: {x: 31.2, y: 22, z: 0}
+  m_LocalPosition: {x: 31.2, y: 2.2, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -5349,7 +5349,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   shape: 1
-  radius: 8
+  radius: 5
   circlePoints: 20
   rotationDegY: 0
   closed: 1
@@ -10249,7 +10249,7 @@ Transform:
   m_GameObject: {fileID: 517124781}
   serializedVersion: 2
   m_LocalRotation: {x: 0.46193978, y: 0.19134173, z: 0.19134173, w: 0.84462327}
-  m_LocalPosition: {x: -2.8, y: 6.9, z: 0}
+  m_LocalPosition: {x: -2.8, y: 2.2, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -10446,7 +10446,7 @@ Camera:
   far clip plane: 1000
   field of view: 34
   orthographic: 1
-  orthographic size: 14
+  orthographic size: 19
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -13607,8 +13607,8 @@ MonoBehaviour:
   playerPrefab: {fileID: 117394769603656870, guid: 2ac7f38a26d2c7c40be0b4b51a45973b, type: 3}
   playerSpawn: {fileID: 1368778524}
   npcPrefab: {fileID: 117394769603656870, guid: 0c475097a2bcd4d2fa0dc3f2f38eaa35, type: 3}
-  civilianCount: 5
-  impostorCount: 2
+  civilianCount: 30
+  impostorCount: 4
   npcSpawns:
   - {fileID: 114193405}
   - {fileID: 1859976705}
@@ -13619,6 +13619,7 @@ MonoBehaviour:
   - {fileID: 1093415522}
   - {fileID: 282123388}
   - {fileID: 697215326}
+  - {fileID: 876766954}
   npcsParent: {fileID: 1961918919}
   playerParent: {fileID: 570833955}
 --- !u!4 &686293583
@@ -17462,6 +17463,55 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 874881046}
   m_Mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &876766952
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 876766953}
+  - component: {fileID: 876766954}
+  m_Layer: 0
+  m_Name: Pentagon_D
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &876766953
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 876766952}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 33.05, y: 17.4, z: 8.3}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1799080514}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &876766954
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 876766952}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5827c2b0a7834de4f8972a8e09235b89, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  shape: 2
+  radius: 5
+  circlePoints: 20
+  rotationDegY: 0
+  closed: 1
 --- !u!1 &876835109
 GameObject:
   m_ObjectHideFlags: 0
@@ -20564,7 +20614,7 @@ Transform:
   m_GameObject: {fileID: 1053632550}
   serializedVersion: 2
   m_LocalRotation: {x: 0.46193978, y: 0.19134173, z: 0.19134173, w: 0.84462327}
-  m_LocalPosition: {x: 17.8, y: 6.5, z: 0}
+  m_LocalPosition: {x: 17.8, y: 2.3, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -20995,7 +21045,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   shape: 0
-  radius: 10
+  radius: 5
   circlePoints: 20
   rotationDegY: 0
   closed: 1
@@ -33453,6 +33503,7 @@ Transform:
   - {fileID: 1093415521}
   - {fileID: 282123387}
   - {fileID: 697215325}
+  - {fileID: 876766953}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1805089526
@@ -34932,7 +34983,7 @@ Transform:
   m_GameObject: {fileID: 1859976704}
   serializedVersion: 2
   m_LocalRotation: {x: 0.46193978, y: 0.19134173, z: 0.19134173, w: 0.84462327}
-  m_LocalPosition: {x: -10.9, y: 18.3, z: 0}
+  m_LocalPosition: {x: -10.9, y: 2.3, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

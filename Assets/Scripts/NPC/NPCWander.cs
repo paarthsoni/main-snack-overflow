@@ -47,4 +47,11 @@ public class NPCWander : MonoBehaviour
         float z = Random.Range(b.min.z, b.max.z);
         target = new Vector3(x, 0f, z);
     }
+
+    void OnCollisionEnter(Collision collision)
+    {
+        if (collision.collider.isTrigger) return;
+        idleTimer = Random.Range(idleTimeRange.x * 0.5f, idleTimeRange.y);
+        PickNewTarget();
+    }
 }
