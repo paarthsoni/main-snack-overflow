@@ -27,6 +27,11 @@ public class SpawnManager : MonoBehaviour
     const int maxAttemptsPerIteration = 24;
     const float defaultPathScale = 0.55f;
 
+    [Header("Grounding")]
+    public LayerMask groundMask = ~0;
+    public float groundProbeHeight = 4f;
+    public float groundProbeDistance = 12f;
+
     void Start(){ SpawnPlayer(); SpawnCivilians(); SpawnImpostors(); }
 
     void SpawnPlayer() {
@@ -118,6 +123,7 @@ public class SpawnManager : MonoBehaviour
                     {
                         int pointIndex = Random.Range(0, points.Length);
                         Vector3 start = Vector3.Lerp(center, points[pointIndex], scale);
+                        start = ProjectToGround(start);
                         if (IsFarEnough(start, spacing))
                         {
                             usedSpawnPositions.Add(start);
@@ -195,5 +201,20 @@ public class SpawnManager : MonoBehaviour
     {
         Vector2 offset2D = Random.insideUnitCircle * radius;
         return new Vector3(offset2D.x, 0f, offset2D.y);
+    }
+
+    Vector3 ProjectToGround(Vector3 position)
+    {
+        Vector3 origin = position + Vector3.up * groundProbeHeight;
+        float maxDistance = groundProbeHeight + groundProbeDistance;
+        if (Physics.Raycast(origin, Vector3.down, out var hit, maxDistance, groundMask, QueryTriggerInteraction.Ignore))
+        {
+            position.y = hit.point.y;
+        }
+        else
+        {
+            position.y = 0f;
+        }
+        return position;
     }
 }

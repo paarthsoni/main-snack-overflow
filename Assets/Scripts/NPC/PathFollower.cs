@@ -1,4 +1,3 @@
-// PathFollowerFlat.cs
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
@@ -10,6 +9,11 @@ public class PathFollower : MonoBehaviour
     public Vector2 pauseRange = new Vector2(0.2f, 0.8f);
     public bool loop = true;
     [Range(0.15f, 1f)] public float pathScale = 0.55f;
+
+    [Header("Grounding")]
+    public LayerMask groundMask = ~0;
+    public float groundProbeHeight = 4f;
+    public float groundProbeDistance = 10f;
 
     Rigidbody rb;
     Vector3[] points;
@@ -27,7 +31,8 @@ public class PathFollower : MonoBehaviour
         float scale = Mathf.Clamp(pathScale, 0.15f, 1f);
         for (int i=0;i<points.Length;i++)
         {
-            points[i] = Vector3.Lerp(center, points[i], scale);
+            Vector3 projected = Vector3.Lerp(center, points[i], scale);
+            points[i] = ProjectToGround(projected);
         }
         SnapToNearestPoint();
     }
@@ -110,5 +115,20 @@ public class PathFollower : MonoBehaviour
         idx = movingForward ? 0 : points.Length - 1;
         transform.position = points[idx];
         pauseTimer = Random.Range(pauseRange.x, pauseRange.y);
+    }
+
+    Vector3 ProjectToGround(Vector3 position)
+    {
+        Vector3 origin = position + Vector3.up * groundProbeHeight;
+        float maxDistance = groundProbeHeight + groundProbeDistance;
+        if (Physics.Raycast(origin, Vector3.down, out var hit, maxDistance, groundMask, QueryTriggerInteraction.Ignore))
+        {
+            position.y = hit.point.y;
+        }
+        else
+        {
+            position.y = 0f;
+        }
+        return position;
     }
 }
