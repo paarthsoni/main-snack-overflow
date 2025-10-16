@@ -1224,7 +1224,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 26de3e671550f4000b8dafcc6a492957, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  showDurationSeconds: 10
+  showDurationSeconds: 5
   shapeSlots:
   - {fileID: 1601541105}
   - {fileID: 1643525120}
@@ -4316,7 +4316,7 @@ MonoBehaviour:
     the clues disappear, eliminate only the correct ones.
 
 
-    You have 3 minutes.
+    You only have a minute.
     Every bullet counts!'
   typingSpeed: 0.03
   memoryBar: {fileID: 82438973}
@@ -9648,7 +9648,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_text: "Welcome, Agent!\n\nMission: \r\nRemember your targets carefully.\r\nOnce
-    the clues disappear, eliminate only the correct ones.\r\n\nYou have 3 minutes.
+    the clues disappear, eliminate only the correct ones.\r\n\nYou only have a minute.
     Every bullet counts!\r\n\n"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -18933,7 +18933,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 10
+  m_text: 5
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -27545,7 +27545,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e613616ff2ed79b489419c4623bd38c3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  startTime: 180
+  startTime: 60
   timerText: {fileID: 1580776672}
   gameOverPanel: {fileID: 1099998095}
 --- !u!4 &1472231007

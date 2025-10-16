@@ -9,7 +9,7 @@ using TMPro;
 public class MemoryBarController : MonoBehaviour
 {
     [Header("Timing")]
-    public float showDurationSeconds = 15f;   // memory phase length (seconds)
+    public float showDurationSeconds = 5f;   // memory phase length (seconds)
 
     [Header("Shape Slots (drag the 4 Image objects here)")]
     public Image[] shapeSlots;
