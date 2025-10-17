@@ -345,7 +345,7 @@ public class SpawnManager : MonoBehaviour
 
     [Header("NPCs")]
     public GameObject npcPrefab;
-    public int civilianCount = 30;
+    public int civilianCount = 12;
     public int impostorCount = 4;
 
     public Transform[] npcSpawns;
