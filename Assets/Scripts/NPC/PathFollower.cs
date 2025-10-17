@@ -151,6 +151,8 @@ public class PathFollower : MonoBehaviour
             points[i] = ProjectToGround(projected);
         }
         SnapToNearestPoint();
+        idx = Random.Range(0, points.Length);
+        pauseTimer = Random.Range(pauseRange.x, pauseRange.y);
     }
 
     void Update()

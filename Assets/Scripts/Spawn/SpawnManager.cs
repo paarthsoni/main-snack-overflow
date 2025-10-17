@@ -357,10 +357,10 @@ public class SpawnManager : MonoBehaviour
     public Transform playerParent;
     readonly List<Vector3> usedSpawnPositions = new List<Vector3>();
 
-    const float minimumSpawnSpacing = 1.1f;
-    const float spacingRelaxFactor = 0.7f;
-    const int spacingRelaxIterations = 4;
-    const int maxAttemptsPerIteration = 24;
+    const float minimumSpawnSpacing = 3.5f;     // was 1.1f
+    const float spacingRelaxFactor = 0.85f;     // was 0.7f
+    const int spacingRelaxIterations = 6;       // was 4
+    const int maxAttemptsPerIteration = 50;     // was 24
     const float defaultPathScale = 0.55f;
 
     [Header("Grounding (for impostor starts)")]
@@ -387,165 +387,63 @@ public class SpawnManager : MonoBehaviour
         usedSpawnPositions.Add(p);
     }
 
-    // Find a PathShape in impostorPaths that matches the given shape type
-    PathShape FindPathByShape(PathShape.ShapeType t)
-    {
-        if (impostorPaths == null) return null;
-        for (int i = 0; i < impostorPaths.Length; i++)
-        {
-            var p = impostorPaths[i];
-            if (p && p.shape == t) return p;
-        }
-        return null;
-    }
-
     void SpawnCivilians()
+{
+    for (int i = 0; i < civilianCount; i++)
     {
-        int spawnCount = npcSpawns != null ? npcSpawns.Length : 0;
+        // Pick random spawn position within movement bounds
+        Vector3 pos = GetRandomPointInMovementBounds();
 
-        for (int i = 0; i < civilianCount; i++)
-        {
-            Transform sp = spawnCount > 0 ? npcSpawns[Random.Range(0, spawnCount)] : null;
-            Vector3 pos = SampleSpawnPosition(sp);
-            var npc = Instantiate(npcPrefab, pos, Quaternion.identity, npcsParent);
+        // Instantiate NPC
+        var npc = Instantiate(npcPrefab, pos, Quaternion.identity, npcsParent);
 
-            // choose a random strategy for decoy type:
-            // 0: same shape (from impostor paths), different color
-            // 1: same color (one of the two), different shape
-            // 2: neither (random wanderer)
-            int decoyType = Random.Range(0, 3);
+        // Random shape and color
+        PathShape.ShapeType shapeType = (PathShape.ShapeType)Random.Range(0, 4);
+        int colorId = Random.Range(0, palette ? palette.Count : 1);
 
-            PathShape.ShapeType shapeType = PathShape.ShapeType.Square; // default
-            int colorId = Random.Range(0, palette ? palette.Count : 1);
+        // Create a unique path at the NPC’s spawn location
+        var path = CreateRuntimePath(shapeType, pos);
 
-            var pairs = GameRoundState.Instance ? GameRoundState.Instance.allowedPairs : null;
-            if (pairs == null || pairs.Length < 2)
-            {
-                var w0 = npc.AddComponent<NPCWander>();
-                w0.movementBounds = movementBounds;
-                ApplyNPCIdentity(npc, false, shapeType, colorId);
-                continue;
-            }
+        // Assign PathFollower to follow this path
+        var follower = npc.AddComponent<PathFollower>();
+        follower.pathShape = path;
 
-            if (decoyType == 0 && impostorPaths != null && impostorPaths.Length > 0)
-            {
-                // same SHAPE as an impostor, different COLOR
-                var anyShape = impostorPaths[Random.Range(0, impostorPaths.Length)].shape;
-                shapeType = anyShape;
-
-                int colA = pairs[0].colorId, colB = pairs[1].colorId;
-                do { colorId = Random.Range(0, palette.Count); } while (colorId == colA || colorId == colB);
-
-                var path = FindPathByShape(anyShape);
-                if (path != null)
-                {
-                    var f = npc.AddComponent<PathFollower>();
-                    f.pathShape = path;
-                }
-                else
-                {
-                    // fallback: wander
-                    var w = npc.AddComponent<NPCWander>();
-                    w.movementBounds = movementBounds;
-                }
-            }
-            else if (decoyType == 1)
-            {
-                // same COLOR as one allowed, different SHAPE
-                int which = Random.Range(0, 2);
-                colorId = pairs[which].colorId;
-
-                PathShape.ShapeType avoid = pairs[which].shape;
-                shapeType = (PathShape.ShapeType)Random.Range(0, 4);
-                int guard = 0;
-                while (shapeType == avoid && guard++ < 8)
-                    shapeType = (PathShape.ShapeType)Random.Range(0, 4);
-
-                var w = npc.AddComponent<NPCWander>();
-                w.movementBounds = movementBounds;
-            }
-            else
-            {
-                // neither matches (pure wanderer, random non-allowed color)
-                int colA = pairs[0].colorId, colB = pairs[1].colorId;
-                do { colorId = Random.Range(0, palette.Count); } while (colorId == colA || colorId == colB);
-                shapeType = (PathShape.ShapeType)Random.Range(0, 4);
-
-                var w = npc.AddComponent<NPCWander>();
-                w.movementBounds = movementBounds;
-            }
-
-            ApplyNPCIdentity(npc, false, shapeType, colorId);
-        }
+        // Apply civilian identity (false = not impostor)
+        ApplyNPCIdentity(npc, false, shapeType, colorId);
     }
+}
 
     void SpawnImpostors()
+{
+    if (GameRoundState.Instance == null || GameRoundState.Instance.allowedPairs == null)
+        return;
+
+    var pairs = GameRoundState.Instance.allowedPairs;
+    if (pairs.Length == 0) return;
+
+    for (int i = 0; i < impostorCount; i++)
     {
-        if (GameRoundState.Instance == null) return;
-        var pairs = GameRoundState.Instance.allowedPairs;
-        if (pairs == null || pairs.Length == 0) return;
+        // Randomly pick one allowed impostor pair (shape + color)
+        var pair = pairs[Random.Range(0, pairs.Length)];
 
-        // Build a plan that guarantees at least one impostor per pair,
-        // then fill up to impostorCount, and shuffle.
-        var plan = new List<GameRoundState.CluePair>(impostorCount);
+        // Spawn randomly within the movement bounds (using your fixed GetRandomPointInMovementBounds)
+        Vector3 pos = GetRandomPointInMovementBounds();
 
-        // ensure coverage
-        for (int i = 0; i < pairs.Length && plan.Count < impostorCount; i++)
-            plan.Add(pairs[i]);
+        // Create the impostor NPC at that position
+        var npc = Instantiate(npcPrefab, pos, Quaternion.identity, npcsParent);
 
-        // fill the rest by cycling the pairs
-        int idx = 0;
-        while (plan.Count < impostorCount)
-        {
-            plan.Add(pairs[idx]);
-            idx = (idx + 1) % pairs.Length;
-        }
+        // Assign impostor identity (true = impostor)
+        ApplyNPCIdentity(npc, true, pair.shape, pair.colorId);
 
-        // shuffle so they don't always spawn in the same order
-        Shuffle(plan);
+        // Create a unique runtime path for this impostor
+        var path = CreateRuntimePath(pair.shape, pos);
 
-        int spawnCount = npcSpawns != null ? npcSpawns.Length : 0;
-
-        for (int i = 0; i < plan.Count; i++)
-        {
-            var pair = plan[i];
-
-            // find a matching path for the pair's shape
-            var path = FindPathByShape(pair.shape);
-            if (path == null)
-            {
-                Debug.LogWarning($"No PathShape found in impostorPaths for {pair.shape}. Add one to the array.");
-                continue;
-            }
-
-            Transform sp = spawnCount > 0 ? npcSpawns[Random.Range(0, spawnCount)] : null;
-            Vector3 pos = SampleImpostorSpawnPosition(sp, path); // includes ground projection
-
-            var npc = Instantiate(npcPrefab, pos, Quaternion.identity, npcsParent);
-            ApplyNPCIdentity(npc, true, pair.shape, pair.colorId);
-
-            if (impostorsFollowPaths)
-            {
-                var f = npc.AddComponent<PathFollower>();
-                f.pathShape = path;
-            }
-            else
-            {
-                var w = npc.AddComponent<NPCWander>();
-                w.movementBounds = movementBounds;
-            }
-        }
+        // Make impostor follow its unique path
+        var follower = npc.AddComponent<PathFollower>();
+        follower.pathShape = path;
     }
+}
 
-    // Fisher–Yates shuffle
-    void Shuffle<T>(IList<T> list)
-    {
-        for (int i = list.Count - 1; i > 0; i--)
-        {
-            int j = Random.Range(0, i + 1);
-            (list[i], list[j]) = (list[j], list[i]);
-        }
-    }
 
     void ApplyNPCIdentity(GameObject npc, bool isImpostor, PathShape.ShapeType shapeType, int colorId)
     {
@@ -559,120 +457,33 @@ public class SpawnManager : MonoBehaviour
         id.ApplyColor(palette, rends);
     }
 
-    Vector3 SampleSpawnPosition(Transform fallback)
+    Vector3 GetRandomPointInMovementBounds()
+{
+    if (movementBounds == null)
     {
-        if (TrySampleWithinBounds(out Vector3 position))
-            return position;
-
-        Vector3 basePos = fallback ? new Vector3(fallback.position.x, 0f, fallback.position.z) : Vector3.zero;
-        if (TrySampleAround(basePos, 0.9f, out position))
-            return position;
-
-        position = basePos + RandomHorizontalOffset(0.45f);
-        usedSpawnPositions.Add(position);
-        return position;
+        Debug.LogError("MovementBounds not assigned on SpawnManager!");
+        return Vector3.zero;
     }
 
-    Vector3 SampleImpostorSpawnPosition(Transform fallback, PathShape path)
-    {
-        if (path)
-        {
-            var points = path.GetPoints();
-            if (points != null && points.Length > 0)
-            {
-                Vector3 center = path.transform.position;
-                float scale = Mathf.Clamp(defaultPathScale, 0.15f, 1f);
-                float spacing = minimumSpawnSpacing;
+    BoxCollider box = movementBounds;
 
-                for (int relax = 0; relax < spacingRelaxIterations; relax++)
-                {
-                    for (int attempt = 0; attempt < maxAttemptsPerIteration; attempt++)
-                    {
-                        int pointIndex = Random.Range(0, points.Length);
-                        Vector3 start = Vector3.Lerp(center, points[pointIndex], scale);
-                        start = ProjectToGround(start); // <-- teammate’s grounding addition
+    float concentrationFactor = 0.5f;
 
-                        if (IsFarEnough(start, spacing))
-                        {
-                            usedSpawnPositions.Add(start);
-                            return start;
-                        }
-                    }
-                    spacing *= spacingRelaxFactor;
-                }
-            }
-        }
+    Vector3 localPoint = new Vector3(
+        Random.Range(-0.5f, 0.5f) * box.size.x * concentrationFactor,
+        Random.Range(-0.5f, 0.5f) * box.size.y * concentrationFactor,
+        0f // thin axis since map is rotated -90° on X
+    );
 
-        return SampleSpawnPosition(fallback);
-    }
+    // Convert to world coordinates
+    Vector3 worldPoint = box.transform.TransformPoint(box.center + localPoint);
 
-    bool TrySampleWithinBounds(out Vector3 position)
-    {
-        position = default;
-        if (!movementBounds) return false;
+    // Project to ground (optional but helps with terrain unevenness)
+    worldPoint = ProjectToGround(worldPoint);
 
-        Bounds b = movementBounds.bounds;
-        float spacing = minimumSpawnSpacing;
-
-        for (int relax = 0; relax < spacingRelaxIterations; relax++)
-        {
-            for (int attempt = 0; attempt < maxAttemptsPerIteration; attempt++)
-            {
-                float x = Random.Range(b.min.x, b.max.x);
-                float z = Random.Range(b.min.z, b.max.z);
-                Vector3 candidate = new Vector3(x, 0f, z);
-
-                if (IsFarEnough(candidate, spacing))
-                {
-                    usedSpawnPositions.Add(candidate);
-                    position = candidate;
-                    return true;
-                }
-            }
-            spacing *= spacingRelaxFactor;
-        }
-        return false;
-    }
-
-    bool TrySampleAround(Vector3 center, float radius, out Vector3 position)
-    {
-        position = default;
-        float spacing = minimumSpawnSpacing;
-
-        for (int relax = 0; relax < spacingRelaxIterations; relax++)
-        {
-            for (int attempt = 0; attempt < maxAttemptsPerIteration; attempt++)
-            {
-                Vector3 candidate = center + RandomHorizontalOffset(radius);
-
-                if (IsFarEnough(candidate, spacing))
-                {
-                    usedSpawnPositions.Add(candidate);
-                    position = candidate;
-                    return true;
-                }
-            }
-            spacing *= spacingRelaxFactor;
-        }
-
-        return false;
-    }
-
-    bool IsFarEnough(Vector3 candidate, float spacing)
-    {
-        foreach (var pos in usedSpawnPositions)
-        {
-            if ((pos - candidate).sqrMagnitude < spacing * spacing)
-                return false;
-        }
-        return true;
-    }
-
-    static Vector3 RandomHorizontalOffset(float radius)
-    {
-        Vector2 offset2D = Random.insideUnitCircle * radius;
-        return new Vector3(offset2D.x, 0f, offset2D.y);
-    }
+    Debug.Log($"Spawned at: {worldPoint}");
+    return worldPoint;
+}
 
     // Teammate's grounding helper for placing impostors on terrain/meshes
     Vector3 ProjectToGround(Vector3 position)
@@ -690,4 +501,38 @@ public class SpawnManager : MonoBehaviour
         }
         return position;
     }
+
+    PathShape CreateRuntimePath(PathShape.ShapeType shapeType, Vector3 center)
+{
+    // Create a unique GameObject to host this NPC’s personal path
+    var go = new GameObject($"Path_{shapeType}_Instance");
+    go.transform.position = center;
+
+    // Optional: nudge center slightly so the loop isn’t centered exactly on the spawn point
+    Vector2 jitter = Random.insideUnitCircle * 1.25f;
+    go.transform.position += new Vector3(jitter.x, 0f, jitter.y);
+
+    // Random orientation for variety; PathShape uses rotationDegY (not transform.rotation) for points
+    float rotY = Random.Range(0f, 360f);
+    go.transform.rotation = Quaternion.Euler(0f, rotY, 0f);
+
+    // Add PathShape and set ONLY existing fields from your PathShape.cs
+    var ps = go.AddComponent<PathShape>();
+    ps.shape = shapeType;            // Triangle, Square, Pentagon, Circle
+    ps.radius = Random.Range(2.8f, 5.5f);
+    ps.rotationDegY = rotY;
+    ps.circlePoints = 20;            // used only if shape == Circle
+    ps.closed = true;
+
+    // Do NOT reference impostorPaths here; do NOT call FindPathByShape here.
+    // Do NOT call a non-existent build method. PathFollower will call GetPoints().
+
+    // Leave this visible in Hierarchy while you test:
+    // go.hideFlags = HideFlags.HideInHierarchy;
+
+    return ps;
+}
+
+
+
 }
