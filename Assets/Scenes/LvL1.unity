@@ -1371,7 +1371,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -254}
+  m_AnchoredPosition: {x: 0, y: -443}
   m_SizeDelta: {x: 200, y: 75}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &87574499
@@ -4309,19 +4309,10 @@ MonoBehaviour:
   instructionsText: {fileID: 478860911}
   instructionsPanel: {fileID: 359235076}
   startButton: {fileID: 87574499}
-  fullText: 'Welcome, Agent!
-
-
-    Mission:
-
-    Remember your targets carefully.
-
-    Once
-    the clues disappear, eliminate only the correct ones.
-
-
-    You only have a minute.
-    Every bullet counts!'
+  fullText: "Welcome, Agent!\n \nMission:\nYou will receive clues about imposters
+    : their color and the shape in which they roam the city.\n\nMemorize these carefully.Once
+    the clues disappear, find and eliminate all imposters by matching both color
+    and shape.\n \nYou have 1 minute to kill them all. Good luck!"
   typingSpeed: 0.03
   memoryBar: {fileID: 82438973}
   timerController: {fileID: 1472231006}
@@ -9651,9 +9642,10 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "Welcome, Agent!\n\nMission: \r\nRemember your targets carefully.\r\nOnce
-    the clues disappear, eliminate only the correct ones.\r\n\nYou only have a minute.
-    Every bullet counts!\r\n\n"
+  m_text: "Welcome, Agent!\n \nMission:\nYou will receive clues about imposters :
+    their color and the shape in which they roam the city.\n\nMemorize these carefully.Once
+    the clues disappear, find and eliminate all imposters by matching both color
+    and shape.\n \nYou have 1 minute to kill them all. Good luck!\n\n"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -11317,8 +11309,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 30, y: 10}
-  m_SizeDelta: {x: 800, y: 800}
+  m_AnchoredPosition: {x: 30, y: -73}
+  m_SizeDelta: {x: 800, y: 900}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &563072212
 MonoBehaviour:
@@ -29891,7 +29883,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 430}
+  m_AnchoredPosition: {x: 0, y: 508}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1580776671
@@ -29985,7 +29977,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0, y: 0, z: 0, w: 0}
+  m_margin: {x: 0, y: -184.82446, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0

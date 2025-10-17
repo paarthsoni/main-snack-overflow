@@ -82,7 +82,10 @@ public class InstructionsManager : MonoBehaviour
 
     [TextArea(3, 10)]
     public string fullText =
-        "Welcome, Agent!\n\nMission:\nRemember your targets carefully.\nOnce the clues disappear, eliminate only the correct ones.\n\nYou only have a minute. Every bullet counts!";
+        "Welcome, Agent!\n\n" +
+        "Mission:\nYou will receive clues about imposters — their color and the shape in which they roam the city.\n" +
+        "Memorize these carefully.\nOnce the clues disappear, find and eliminate all imposters by matching both color and shape.\n\n" +
+        "You have 1 minute to kill them all. Good luck!";
     public float typingSpeed = 0.03f;
 
     [Header("Game Flow")]
