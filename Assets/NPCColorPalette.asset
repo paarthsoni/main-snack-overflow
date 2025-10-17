@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1eefb4e94473a488daa82de1c67172d3, type: 3}
+  m_Name: NPCColorPalette
+  m_EditorClassIdentifier: 
+  entries:
+  - name: Light Blue
+    color: {r: 0.30980393, g: 0.7647059, b: 0.96862745, a: 0}
+  - name: Amber Yellow
+    color: {r: 1, g: 0.8352941, b: 0.30980393, a: 1}
+  - name: Dark Green
+    color: {r: 0.038581353, g: 0.4811321, b: 0.06401531, a: 0}
+  - name: Coral Red
+    color: {r: 1, g: 0.4392157, b: 0.2627451, a: 0}
+  - name: Violet Purple
+    color: {r: 0.7294118, g: 0.40784314, b: 0.78431374, a: 0}
+  - name: Deep Magenta
+    color: {r: 0.9411765, g: 0.38431373, b: 0.57254905, a: 0}

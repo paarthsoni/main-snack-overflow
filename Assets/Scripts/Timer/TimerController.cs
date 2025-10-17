@@ -47,6 +47,11 @@ public class TimerController : MonoBehaviour
         Time.timeScale = 0f;
     }
 
+    public void ForceGameOver()
+{
+    GameOver();   // calls your existing private GameOver()
+}       
+
     public void StartTimer(float seconds = -1f)  // NEW
     {
         if (seconds > 0f) startTime = seconds;
@@ -58,8 +63,10 @@ public class TimerController : MonoBehaviour
     }
 
     public void Retry()
-    {
-        Time.timeScale = 1f;
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-    }
+{
+    Time.timeScale = 1f;
+    SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+}
+
+
 }

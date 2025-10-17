@@ -1,3 +1,4 @@
+// PathShapeFlat.cs
 using UnityEngine;
 public class PathShape : MonoBehaviour
 {
