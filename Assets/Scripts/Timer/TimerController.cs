@@ -38,7 +38,11 @@ public class TimerController : MonoBehaviour
         int seconds = Mathf.FloorToInt(currentTime % 60);
         timerText.text = string.Format("{0:00}:{1:00}", minutes, seconds);
     }
-
+    public void StopTimer()
+{
+    // Halts countdown without triggering GameOver
+    isRunning = false;
+}
     void GameOver()
     {
         isGameOver = true;

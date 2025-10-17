@@ -429,8 +429,9 @@ public class SpawnManager : MonoBehaviour
         // Spawn randomly within the movement bounds (using your fixed GetRandomPointInMovementBounds)
         Vector3 pos = GetRandomPointInMovementBounds();
 
-        // Create the impostor NPC at that position
-        var npc = Instantiate(npcPrefab, pos, Quaternion.identity, npcsParent);
+            // Create the impostor NPC at that position
+            var npc = Instantiate(npcPrefab, pos, Quaternion.identity, npcsParent);
+        ImpostorTracker.Instance?.RegisterImpostor();
 
         // Assign impostor identity (true = impostor)
         ApplyNPCIdentity(npc, true, pair.shape, pair.colorId);
