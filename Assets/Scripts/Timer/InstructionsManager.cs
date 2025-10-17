@@ -1,73 +1,78 @@
-// using UnityEngine;
-// using UnityEngine.UI;
-// using TMPro;
-// using System.Collections;
+﻿//using UnityEngine;
+//using UnityEngine.UI;
+//using TMPro;
+//using System.Collections;
 
-// public class InstructionsManager : MonoBehaviour
-// {
-    
-//     public TextMeshProUGUI instructionsText;
-//     public GameObject instructionsPanel;
-//     public Button startButton;
+//public class InstructionsManager : MonoBehaviour
+//{
+//    public TextMeshProUGUI instructionsText;
+//    public GameObject instructionsPanel;
+//    public Button startButton;
 
-//     [TextArea(3, 10)]
-//     public string fullText = "Welcome, Agent!\n\nMission:\nRemember your targets carefully.\nOnce the clues disappear, eliminate only the correct ones.\n\nYou only have a minute. Every bullet counts!";
-//     public float typingSpeed = 0.03f;
+//    [TextArea(3, 10)]
+//    public string fullText =
+//        "Welcome, Agent!\n\n" +
+//        "Mission:\nYou will receive clues about imposters — their color and the shape in which they roam the city.\n" +
+//        "Memorize these carefully.\nOnce the clues disappear, find and eliminate all imposters by matching both color and shape.\n\n" +
+//        "You have 1 minute to kill them all. Good luck!";
+//    public float typingSpeed = 0.03f;
 
-//     [Header("Game Flow")]
-//     public MemoryBarController memoryBar;   
-//     public TimerController timerController; 
-//     public GameObject[] enableOnGameplay;   
+//    [Header("Game Flow")]
+//    public MemoryBarController memoryBar;
+//    public TimerController timerController;
+//    public GameObject[] enableOnGameplay;
 
-//     void Start()
-//     {
-//         Time.timeScale = 0f; 
-//         startButton.gameObject.SetActive(false);
-//         StartCoroutine(TypeText());
-//         startButton.onClick.AddListener(OnStartClicked);
+//    void Start()
+//    {
+//        Time.timeScale = 0f; 
+//        startButton.gameObject.SetActive(false);
+//        StartCoroutine(TypeText());
+//        startButton.onClick.AddListener(OnStartClicked);
 
-//         if (memoryBar != null)
-//             memoryBar.OnMemoryPhaseComplete += HandleMemoryComplete;
-//     }
+//        if (memoryBar != null)
+//            memoryBar.OnMemoryPhaseComplete += HandleMemoryComplete;  // now matches Action
+//    }
 
-//     void OnDestroy()
-//     {
-//         startButton.onClick.RemoveListener(OnStartClicked);
-//         if (memoryBar != null)
-//             memoryBar.OnMemoryPhaseComplete -= HandleMemoryComplete;
-//     }
+//    void OnDestroy()
+//    {
+//        startButton.onClick.RemoveListener(OnStartClicked);
+//        if (memoryBar != null)
+//            memoryBar.OnMemoryPhaseComplete -= HandleMemoryComplete;
+//    }
 
-//     IEnumerator TypeText()
-//     {
-//         instructionsText.text = "";
-//         foreach (char c in fullText)
-//         {
-//             instructionsText.text += c;
-//             yield return new WaitForSecondsRealtime(typingSpeed);
-//         }
-//         yield return new WaitForSecondsRealtime(0.3f);
-//         startButton.gameObject.SetActive(true);
-//     }
+//    IEnumerator TypeText()
+//    {
+//        instructionsText.text = "";
+//        foreach (char c in fullText)
+//        {
+//            instructionsText.text += c;
+//            yield return new WaitForSecondsRealtime(typingSpeed);
+//        }
+//        yield return new WaitForSecondsRealtime(0.3f);
+//        startButton.gameObject.SetActive(true);
+//    }
 
-//     void OnStartClicked()
-//     {
-//         instructionsPanel.SetActive(false);
+//    void OnStartClicked()
+//    {
+//        instructionsPanel.SetActive(false);
 
-//         if (memoryBar != null)
-//             memoryBar.BeginMemoryPhase();
-//     }
+//        if (memoryBar != null)
+//            memoryBar.BeginMemoryPhase();   // pauses & shows clues, then fires event
+//    }
 
-//     void HandleMemoryComplete(System.Collections.Generic.List<PathShape.ShapeType> _)
-//     {
-//         if (timerController != null)
-//             timerController.StartTimer(60f);
-
-//         foreach (var go in enableOnGameplay)
-//             if (go) go.SetActive(true);
-//     }
-// }
+//    // CHANGED: no parameters
+//    void HandleMemoryComplete()
+//    {
+//        if (timerController != null)
+//            timerController.StartTimer(60f);
+//        FindObjectOfType<SpawnManager>()?.StartSpawning();
 
 
+//        if (enableOnGameplay != null)
+//            foreach (var go in enableOnGameplay)
+//                if (go) go.SetActive(true);
+//    }
+//}
 
 using UnityEngine;
 using UnityEngine.UI;
@@ -83,9 +88,10 @@ public class InstructionsManager : MonoBehaviour
     [TextArea(3, 10)]
     public string fullText =
         "Welcome, Agent!\n\n" +
-        "Mission:\nYou will receive clues about imposters � their color and the shape in which they roam the city.\n" +
+        "Mission:\nYou will receive clues about imposters — their color and the shape in which they roam the city.\n" +
         "Memorize these carefully.\nOnce the clues disappear, find and eliminate all imposters by matching both color and shape.\n\n" +
         "You have 1 minute to kill them all. Good luck!";
+
     public float typingSpeed = 0.03f;
 
     [Header("Game Flow")]
@@ -93,15 +99,19 @@ public class InstructionsManager : MonoBehaviour
     public TimerController timerController;
     public GameObject[] enableOnGameplay;
 
+    // 🔹 CHANGE 1 — remove auto-start logic
     void Start()
     {
-        Time.timeScale = 0f; 
+        Time.timeScale = 0f;
         startButton.gameObject.SetActive(false);
-        StartCoroutine(TypeText());
         startButton.onClick.AddListener(OnStartClicked);
 
         if (memoryBar != null)
-            memoryBar.OnMemoryPhaseComplete += HandleMemoryComplete;  // now matches Action
+            memoryBar.OnMemoryPhaseComplete += HandleMemoryComplete;
+
+        // ❌ REMOVE: StartCoroutine(TypeText());
+        // Instructions will be started manually from TitleManager.
+        instructionsPanel.SetActive(false); // hide until title finishes
     }
 
     void OnDestroy()
@@ -111,7 +121,14 @@ public class InstructionsManager : MonoBehaviour
             memoryBar.OnMemoryPhaseComplete -= HandleMemoryComplete;
     }
 
-    IEnumerator TypeText()
+    // 🔹 CHANGE 2 — add public method to trigger instructions
+    public void StartInstructions()
+    {
+        instructionsPanel.SetActive(true);
+        StartCoroutine(TypeText());
+    }
+
+    public IEnumerator TypeText()
     {
         instructionsText.text = "";
         foreach (char c in fullText)
@@ -119,7 +136,7 @@ public class InstructionsManager : MonoBehaviour
             instructionsText.text += c;
             yield return new WaitForSecondsRealtime(typingSpeed);
         }
-        yield return new WaitForSecondsRealtime(0.3f);
+        yield return new WaitForSecondsRealtime(0.6f);
         startButton.gameObject.SetActive(true);
     }
 
@@ -131,16 +148,16 @@ public class InstructionsManager : MonoBehaviour
             memoryBar.BeginMemoryPhase();   // pauses & shows clues, then fires event
     }
 
-    // CHANGED: no parameters
     void HandleMemoryComplete()
     {
         if (timerController != null)
             timerController.StartTimer(60f);
-        FindObjectOfType<SpawnManager>()?.StartSpawning();
 
+        FindObjectOfType<SpawnManager>()?.StartSpawning();
 
         if (enableOnGameplay != null)
             foreach (var go in enableOnGameplay)
                 if (go) go.SetActive(true);
     }
 }
+
