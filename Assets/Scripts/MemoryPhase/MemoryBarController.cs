@@ -289,7 +289,7 @@ using TMPro;
 [DisallowMultipleComponent]
 public class MemoryBarController : MonoBehaviour
 {
-    // -------- Clue generation (random 2 colored shapes) --------
+    
     [Header("Clue generation")]
     [Tooltip("Your ScriptableObject palette (indexes are color IDs).")]
     public NPCColorPalette palette;
@@ -300,16 +300,16 @@ public class MemoryBarController : MonoBehaviour
     [Tooltip("Pick new random clues each time the memory phase begins.")]
     public bool randomizeOnEnable = true;
 
-    // we fill this when we pick the two clues
+    
     private GameRoundState.CluePair[] chosen = new GameRoundState.CluePair[2];
 
-    // -------- Timing / UI / Animation --------
+    
     [Header("Timing")]
     [Tooltip("How long the clues are shown (seconds).")]
     public float showDurationSeconds = 5f;
 
     [Header("Shape Slots (exactly 2 Image objects)")]
-    public Image[] shapeSlots;   // size = 2, drag your two UI Images here
+    public Image[] shapeSlots;   
 
     [Header("Shape Sprites (white sprites recommended so tinting works)")]
     public Sprite squareSprite;
@@ -319,11 +319,11 @@ public class MemoryBarController : MonoBehaviour
 
     [Header("UI")]
     public TMP_Text timerText;
-    public GameObject rootBar;           // MemoryBar GameObject
-    public RectTransform layoutRoot;     // parent RectTransform for layout rebuild
+    public GameObject rootBar;           
+    public RectTransform layoutRoot;     
 
-    RectTransform barRect;               // cached
-    CanvasGroup canvasGroup;             // for fade
+    RectTransform barRect;               
+    CanvasGroup canvasGroup;            
 
     [Header("Blur / Pause (optional)")]
     [Tooltip("Optional: your URP Global Volume to enable while showing clues.")]
@@ -350,9 +350,8 @@ public class MemoryBarController : MonoBehaviour
     [Tooltip("RenderTexture the camera writes to (used by the RawImage).")]
     public RenderTexture worldRT;
 
-    public event Action OnMemoryPhaseComplete; // notify when bar is gone
+    public event Action OnMemoryPhaseComplete; 
 
-    // ----------------- Lifecycle -----------------
 
     void Awake()
     {
@@ -361,17 +360,15 @@ public class MemoryBarController : MonoBehaviour
         canvasGroup = rootBar.GetComponent<CanvasGroup>();
         if (!canvasGroup) canvasGroup = rootBar.AddComponent<CanvasGroup>();
 
-        // hidden until BeginMemoryPhase() is called
+        
         canvasGroup.alpha = 0f;
         rootBar.SetActive(false);
     }
 
-    /// <summary>
-    /// Call this when you want to show the memory bar (e.g., after instructions).
-    /// </summary>
+    
     public void BeginMemoryPhase()
     {
-        // Generate two random colored clues, apply to UI, and publish them
+        
         if (randomizeOnEnable)
         {
             GenerateNewClues();
@@ -379,13 +376,13 @@ public class MemoryBarController : MonoBehaviour
             PublishClues();
         }
 
-        // Blur + pause (optional)
+        
         if (blurVolume) blurVolume.SetActive(true);
         if (worldBlurRawImage) worldBlurRawImage.gameObject.SetActive(true);
         if (mainCamera && worldRT) mainCamera.targetTexture = worldRT;
         if (pauseGameDuringMemory) Time.timeScale = 0f;
 
-        // Prep intro pose
+        
         rootBar.SetActive(true);
         canvasGroup.alpha = 0f;
         var targetPos = barRect.anchoredPosition;
@@ -397,7 +394,7 @@ public class MemoryBarController : MonoBehaviour
 
     IEnumerator IntroThenCountdownThenOutro(Vector2 targetPos)
     {
-        // INTRO (fade/slide in) — unscaled time
+       
         float t = 0f;
         Vector2 from = barRect.anchoredPosition;
         Vector2 to = targetPos;
@@ -405,7 +402,7 @@ public class MemoryBarController : MonoBehaviour
         while (t < introFadeDuration)
         {
             float u = t / introFadeDuration;
-            u = u * u * (3f - 2f * u); // smoothstep
+            u = u * u * (3f - 2f * u); 
             barRect.anchoredPosition = Vector2.Lerp(from, to, u);
             canvasGroup.alpha = Mathf.Lerp(0f, 1f, u);
             t += Time.unscaledDeltaTime;
@@ -414,7 +411,6 @@ public class MemoryBarController : MonoBehaviour
         barRect.anchoredPosition = to;
         canvasGroup.alpha = 1f;
 
-        // COUNTDOWN (unscaled time; game is paused)
         float remain = showDurationSeconds;
         while (remain > 0f)
         {
@@ -424,7 +420,6 @@ public class MemoryBarController : MonoBehaviour
         }
         if (timerText) timerText.text = "0";
 
-        // OUTRO (fade/slide out)
         Vector2 start = barRect.anchoredPosition;
         Vector2 end = start + new Vector2(0f, -Mathf.Abs(slideDistanceY));
         float startAlpha = canvasGroup.alpha;
@@ -442,20 +437,23 @@ public class MemoryBarController : MonoBehaviour
         canvasGroup.alpha = fadeTo;
         rootBar.SetActive(false);
 
-        // Unblur + unpause
-        if (blurVolume) blurVolume.SetActive(false);
-        if (worldBlurRawImage) worldBlurRawImage.gameObject.SetActive(false);
-        if (mainCamera) mainCamera.targetTexture = null;
-        if (pauseGameDuringMemory) Time.timeScale = 1f;
+if (blurVolume) blurVolume.SetActive(false);
+if (worldBlurRawImage) worldBlurRawImage.gameObject.SetActive(false);
+if (mainCamera) mainCamera.targetTexture = null;
+if (pauseGameDuringMemory) Time.timeScale = 1f;
 
-        OnMemoryPhaseComplete?.Invoke();
+var timer = FindObjectOfType<TimerController>(true);
+if (timer != null) timer.StartTimer(60f);
+
+
+OnMemoryPhaseComplete?.Invoke();
+
     }
 
-    // ----------------- Clue logic -----------------
 
     void GenerateNewClues()
     {
-        // Build the shape pool from sourceShapes; fall back to all 4 if empty
+        
         var pool = new List<PathShape.ShapeType>();
         if (sourceShapes != null && sourceShapes.Length > 0)
         {
@@ -473,23 +471,23 @@ public class MemoryBarController : MonoBehaviour
             });
         }
 
-        // Pick two DISTINCT shapes
+        
         var sA = pool[UnityEngine.Random.Range(0, pool.Count)];
         pool.Remove(sA);
         var sB = pool[UnityEngine.Random.Range(0, pool.Count)];
 
-        // Pick two DISTINCT colors from the palette
+        
         int cA = 0, cB = 0;
         int n = palette ? palette.Count : 0;
         if (n <= 1)
         {
-            cA = 0; cB = 0; // safe fallback if palette empty/1 entry
+            cA = 0; cB = 0; 
         }
         else
         {
             cA = UnityEngine.Random.Range(0, n);
             cB = UnityEngine.Random.Range(0, n - 1);
-            if (cB >= cA) cB++; // ensure distinct
+            if (cB >= cA) cB++; 
         }
 
         chosen[0] = new GameRoundState.CluePair { shape = sA, colorId = cA };
@@ -499,11 +497,10 @@ public class MemoryBarController : MonoBehaviour
 {
     if (!img) return;
     var rt = img.rectTransform;
-    // If the slot is tiny (due to layout), force a sensible size
     if (rt.rect.width < 10f || rt.rect.height < 10f)
         rt.sizeDelta = new Vector2(w, h);
 
-    // Make sure the Image is in a visible mode
+    
     img.type = Image.Type.Simple;
     img.preserveAspect = true;
     var c = img.color; if (c.a < 0.99f) { c.a = 1f; img.color = c; }
@@ -512,10 +509,10 @@ public class MemoryBarController : MonoBehaviour
     void ApplyCluesToUI()
     {
         
-        // Ensure sprites are white so tint shows true palette color
+        
         if (shapeSlots == null || shapeSlots.Length < 2) return;
 
-        // Slot 0
+        
         if (shapeSlots[0])
         {
             shapeSlots[0].sprite = GetSpriteFor(chosen[0].shape);
@@ -524,7 +521,7 @@ public class MemoryBarController : MonoBehaviour
             shapeSlots[0].enabled = true;
         }
 
-        // Slot 1
+        
         if (shapeSlots[1])
         {
             shapeSlots[1].sprite = GetSpriteFor(chosen[1].shape);
@@ -547,7 +544,7 @@ public class MemoryBarController : MonoBehaviour
             GameRoundState.Instance.allowedPairs = new[] { chosen[0], chosen[1] };
     }
 
-    // ----------------- Utils -----------------
+   
 
     Sprite GetSpriteFor(PathShape.ShapeType shape)
     {

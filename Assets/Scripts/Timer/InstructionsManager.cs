@@ -99,7 +99,7 @@ public class InstructionsManager : MonoBehaviour
     public TimerController timerController;
     public GameObject[] enableOnGameplay;
 
-    // 🔹 CHANGE 1 — remove auto-start logic
+    
     void Start()
     {
         Time.timeScale = 0f;
@@ -109,9 +109,8 @@ public class InstructionsManager : MonoBehaviour
         if (memoryBar != null)
             memoryBar.OnMemoryPhaseComplete += HandleMemoryComplete;
 
-        // ❌ REMOVE: StartCoroutine(TypeText());
-        // Instructions will be started manually from TitleManager.
-        instructionsPanel.SetActive(false); // hide until title finishes
+        
+        instructionsPanel.SetActive(false); 
     }
 
     void OnDestroy()
@@ -121,7 +120,7 @@ public class InstructionsManager : MonoBehaviour
             memoryBar.OnMemoryPhaseComplete -= HandleMemoryComplete;
     }
 
-    // 🔹 CHANGE 2 — add public method to trigger instructions
+    
     public void StartInstructions()
     {
         instructionsPanel.SetActive(true);
@@ -145,19 +144,20 @@ public class InstructionsManager : MonoBehaviour
         instructionsPanel.SetActive(false);
 
         if (memoryBar != null)
-            memoryBar.BeginMemoryPhase();   // pauses & shows clues, then fires event
+            memoryBar.BeginMemoryPhase();   
     }
+void HandleMemoryComplete()
+{
+   
+    if (timerController != null)
+        timerController.StartTimer(60f);
 
-    void HandleMemoryComplete()
-    {
-        if (timerController != null)
-            timerController.StartTimer(60f);
+    FindObjectOfType<SpawnManager>()?.StartSpawning();
 
-        FindObjectOfType<SpawnManager>()?.StartSpawning();
+    if (enableOnGameplay != null)
+        foreach (var go in enableOnGameplay)
+            if (go) go.SetActive(true);
+}
 
-        if (enableOnGameplay != null)
-            foreach (var go in enableOnGameplay)
-                if (go) go.SetActive(true);
-    }
 }
 
