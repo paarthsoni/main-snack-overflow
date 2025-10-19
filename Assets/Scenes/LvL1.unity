@@ -28491,6 +28491,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   startingLives: 3
   livesText: {fileID: 761145254}
+  livesTextName: LivesText
+  livesTextTag: LivesText
+  logIfMissing: 1
   OnOutOfLives:
     m_PersistentCalls:
       m_Calls:

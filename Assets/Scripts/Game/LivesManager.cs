@@ -1,4 +1,3 @@
-
 using UnityEngine;
 using TMPro;
 using UnityEngine.Events;
@@ -12,7 +11,16 @@ public class LivesManager : MonoBehaviour
     [Min(0)] public int startingLives = 3;
 
     [Header("UI (scene object)")]
-    public TextMeshProUGUI livesText;   // this will be re-bound per scene
+    [Tooltip("Will be rebound automatically each scene load by name/tag below.")]
+    public TextMeshProUGUI livesText;
+
+    [Header("Binding (optional)")]
+    [Tooltip("Name to search for in the scene. Leave empty to skip name search.")]
+    [SerializeField] string livesTextName = "LivesText";
+    [Tooltip("Tag to search for in the scene. Leave empty to skip tag search.")]
+    [SerializeField] string livesTextTag  = "LivesText";
+    [Tooltip("If true, logs a warning when LivesText is not found.")]
+    [SerializeField] bool logIfMissing = true;
 
     [Header("Events")]
     public UnityEvent OnOutOfLives = new UnityEvent();
@@ -21,8 +29,13 @@ public class LivesManager : MonoBehaviour
 
     void Awake()
     {
-        // Singleton + persist
-        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
+       
+        if (Instance != null && Instance != this)
+        {
+            Debug.LogWarning("[LivesManager] Duplicate detected — destroying this instance.");
+            Destroy(gameObject);
+            return;
+        }
         Instance = this;
         DontDestroyOnLoad(gameObject);
     }
@@ -32,57 +45,112 @@ public class LivesManager : MonoBehaviour
 
     void Start()
     {
-        // First scene boot
-        if (lives <= 0) lives = startingLives;
+        
+        lives = startingLives;
+        RebindLivesText(force: true);
         UpdateUI();
     }
 
     void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        // Always unpause after reload
-        if (Time.timeScale == 0f) Time.timeScale = 1f;
+        
+        lives = startingLives;
 
-        // Re-wire the Game Over target (TimerController in this scene)
+        
         OnOutOfLives.RemoveAllListeners();
-        var tc = FindObjectOfType<TimerController>();
+        var tc = FindObjectOfType<TimerController>(true);
         if (tc) OnOutOfLives.AddListener(tc.ForceGameOver);
 
-        // Re-bind the scene's LivesText (by name or tag)
-        if (livesText == null)
-        {
-            // Try by name first (rename your UI text to "LivesText")
-            var go = GameObject.Find("LivesText");
-            if (go) livesText = go.GetComponent<TextMeshProUGUI>();
+        
+        RebindLivesText(force: true);
+        UpdateUI();
+    }
 
-            // Fallback: search by tag "LivesText" (create this tag and assign to the text)
-            if (!livesText)
-            {
-                var all = FindObjectsOfType<TextMeshProUGUI>(true);
-                foreach (var t in all)
-                    if (t.CompareTag("LivesText")) { livesText = t; break; }
-            }
-        }
-
-        // New round = reset lives & UI
-        ResetLives();
+    
+    public static void SafeLoseLife()
+    {
+        if (Instance != null) Instance.LoseLife();
+        else Debug.LogError("[LivesManager] SafeLoseLife() called but Instance is null.");
     }
 
     public void LoseLife()
     {
+        int before = lives;
         lives = Mathf.Max(0, lives - 1);
+
+        
+        if (!IsTextValid(livesText)) RebindLivesText(force: true);
+
         UpdateUI();
-        if (lives == 0) OnOutOfLives.Invoke();
+
+        if (lives == 0)
+            OnOutOfLives.Invoke();
     }
 
+    
     public void ResetLives(int to = -1)
     {
         lives = (to >= 0) ? to : startingLives;
+        if (!IsTextValid(livesText)) RebindLivesText(force: true);
         UpdateUI();
     }
 
     void UpdateUI()
     {
-        if (livesText) livesText.text = $"Remaining Lives: {lives}";
+        if (!IsTextValid(livesText))
+        {
+            RebindLivesText(force: true);
+            if (!IsTextValid(livesText))
+            {
+                if (logIfMissing)
+                    Debug.LogWarning("[LivesManager] UpdateUI() skipped — LivesText not found. " +
+                                     $"Set name='{livesTextName}' or tag='{livesTextTag}', or drag assign in Inspector.");
+                return;
+            }
+        }
+
+        livesText.text = $"Remaining Lives: {lives}";
+        if (!livesText.gameObject.activeSelf)
+            livesText.gameObject.SetActive(true);
+    }
+
+    
+
+    static bool IsTextValid(TextMeshProUGUI t) => t != null && !ReferenceEquals(t, null);
+
+    void RebindLivesText(bool force = false)
+    {
+        if (!force && IsTextValid(livesText)) return;
+
+        livesText = null;
+
+        
+        if (!string.IsNullOrEmpty(livesTextName))
+        {
+            var byName = GameObject.Find(livesTextName);
+            if (byName) livesText = byName.GetComponent<TextMeshProUGUI>();
+        }
+
+        
+        if (!IsTextValid(livesText) && !string.IsNullOrEmpty(livesTextTag))
+        {
+            var all = FindObjectsOfType<TextMeshProUGUI>(true);
+            for (int i = 0; i < all.Length; i++)
+            {
+                var t = all[i];
+                if (t && t.CompareTag(livesTextTag))
+                {
+                    livesText = t;
+                    break;
+                }
+            }
+        }
+
+        if (!IsTextValid(livesText) && logIfMissing)
+        {
+            Debug.LogWarning("[LivesManager] LivesText not found in scene. " +
+                             $"(searched name='{livesTextName}', tag='{livesTextTag}').");
+        }
     }
 
     public int Current => lives;
