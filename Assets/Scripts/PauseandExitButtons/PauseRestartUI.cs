@@ -1,85 +1,202 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using TMPro;
+using UnityEngine.EventSystems;
 
 public class PauseRestartUI : MonoBehaviour
 {
-    [Header("Buttons")]
-    [SerializeField] private Button pauseButton;   // drag PauseButton
-    [SerializeField] private Button exitButton;    // drag ExitButton (acts as Restart)
+    [Header("Assign if you want, or leave blank to find by name")]
+    [SerializeField] private Button pauseButton;       
+    [SerializeField] private Button exitButton;        
+    [SerializeField] private GameObject pauseOverlay;  
 
-    [Header("Optional Overlay")]
-    [SerializeField] private GameObject pauseOverlay; // dim panel; optional
+    [Header("Find-by-name (case-sensitive)")]
+    [SerializeField] private string pauseButtonName  = "PauseButton";
+    [SerializeField] private string exitButtonName   = "ExitButton";
+    [SerializeField] private string pauseOverlayName = "PauseOverlay";
 
-    private TimerController timer;   // found at runtime
-    private bool paused;
+    private TimerController timer;
+    private bool paused = false;
 
     void Awake()
     {
-        timer = FindObjectOfType<TimerController>(true);
-        if (!pauseButton || !exitButton)
-        {
-            Debug.LogWarning("[PauseRestartUI] Assign Pause & Exit buttons in the inspector.");
-        }
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    void OnDestroy()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+        UnwireButtons();
     }
 
     void OnEnable()
     {
-        if (pauseButton) pauseButton.onClick.AddListener(TogglePause);
-        if (exitButton)  exitButton.onClick.AddListener(RestartGame);
+        TryRebindAll();
     }
 
     void OnDisable()
     {
-        if (pauseButton) pauseButton.onClick.RemoveListener(TogglePause);
-        if (exitButton)  exitButton.onClick.RemoveListener(RestartGame);
+        UnwireButtons();
     }
 
+    void OnSceneLoaded(Scene s, LoadSceneMode mode)
+    {
+        if (Time.timeScale == 0f) Time.timeScale = 1f;
+        paused = false;
+
+        TryRebindAll();
+
+        if (pauseOverlay) pauseOverlay.SetActive(false);
+        SetButtonLabel(pauseButton, "Pause");
+    }
+
+    
     void TogglePause()
     {
         paused = !paused;
 
         if (paused)
         {
-            // stop world + countdown
             Time.timeScale = 0f;
             if (timer) timer.StopTimer();
-            if (pauseOverlay) pauseOverlay.SetActive(true);
             SetButtonLabel(pauseButton, "Resume");
+            ShowOverlay();
         }
         else
         {
-            // resume world + countdown
             Time.timeScale = 1f;
             if (timer) timer.ResumeTimer();
-            if (pauseOverlay) pauseOverlay.SetActive(false);
             SetButtonLabel(pauseButton, "Pause");
+            HideOverlay();
         }
     }
 
     void RestartGame()
     {
-        // Ensure unpaused before reload so the new scene isn't frozen.
         Time.timeScale = 1f;
-
-        // Use TimerController’s retry (scene reload) if present.
-        if (timer)
-        {
-            timer.Retry();  // reloads current scene → title → instructions → memory → gameplay
-            return;
-        }
-
-        // Fallback: direct reload.
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name, LoadSceneMode.Single);
+        if (timer) timer.Retry();
+        else SceneManager.LoadScene(SceneManager.GetActiveScene().name, LoadSceneMode.Single);
     }
 
-    // helper to change TMP or legacy Text on the button
+    
+    void TryRebindAll()
+    {
+        EnsureEventSystem();
+
+        timer = FindObjectOfType<TimerController>(true);
+
+        if (!pauseButton) pauseButton = FindButtonByName(pauseButtonName);
+        if (!exitButton)  exitButton  = FindButtonByName(exitButtonName);
+
+        if (!pauseOverlay) pauseOverlay = FindOverlayByName(pauseOverlayName);
+
+        UnwireButtons();
+        if (pauseButton) pauseButton.onClick.AddListener(TogglePause);
+        if (exitButton)  exitButton.onClick.AddListener(RestartGame);
+
+        SetButtonLabel(pauseButton, "Pause");
+    }
+
+    void UnwireButtons()
+    {
+        if (pauseButton) pauseButton.onClick.RemoveListener(TogglePause);
+        if (exitButton)  exitButton.onClick.RemoveListener(RestartGame);
+    }
+
+    Button FindButtonByName(string targetName)
+    {
+        if (string.IsNullOrEmpty(targetName)) return null;
+
+        var canvases = GameObject.FindObjectsOfType<Canvas>(true);
+        foreach (var canvas in canvases)
+        {
+            foreach (var t in canvas.GetComponentsInChildren<Transform>(true))
+            {
+                if (t.name == targetName)
+                {
+                    var b = t.GetComponent<Button>();
+                    if (b) return b;
+                }
+            }
+        }
+        return null;
+    }
+
+    GameObject FindOverlayByName(string targetName)
+    {
+        if (string.IsNullOrEmpty(targetName)) return null;
+
+        var canvases = GameObject.FindObjectsOfType<Canvas>(true);
+        foreach (var canvas in canvases)
+        {
+            foreach (var t in canvas.GetComponentsInChildren<Transform>(true))
+            {
+                if (t.name == targetName)
+                    return t.gameObject;
+            }
+        }
+        return null;
+    }
+
+    
+    void ShowOverlay()
+    {
+        if (!pauseOverlay) return;
+
+        if (!pauseOverlay.activeSelf) pauseOverlay.SetActive(true);
+
+        var img = pauseOverlay.GetComponent<Image>();
+        if (img) img.raycastTarget = false;  
+
+        
+        pauseOverlay.transform.SetAsFirstSibling();
+
+        
+        if (pauseButton)
+        {
+            var buttonsRoot = pauseButton.transform.parent;
+            if (buttonsRoot) buttonsRoot.SetAsLastSibling();
+        }
+        if (exitButton && exitButton.transform.parent != null && pauseButton &&
+            exitButton.transform.parent != pauseButton.transform.parent)
+        {
+            exitButton.transform.parent.SetAsLastSibling();
+        }
+    }
+
+    void HideOverlay()
+    {
+        if (pauseOverlay && pauseOverlay.activeSelf)
+            pauseOverlay.SetActive(false);
+    }
+
+    
     void SetButtonLabel(Button b, string text)
     {
         if (!b) return;
-        var tmp = b.GetComponentInChildren<TMPro.TextMeshProUGUI>(true);
-        if (tmp) { tmp.text = text; return; }
-        var uText = b.GetComponentInChildren<UnityEngine.UI.Text>(true);
-        if (uText) uText.text = text;
+        var tmp = b.GetComponentInChildren<TextMeshProUGUI>(true);
+        if (tmp)
+        {
+            tmp.text = text;
+            tmp.enableAutoSizing = false;
+            tmp.enableWordWrapping = false;
+            return;
+        }
+        var uText = b.GetComponentInChildren<Text>(true);
+        if (uText)
+        {
+            uText.text = text;
+            uText.resizeTextForBestFit = false;
+        }
+    }
+
+    void EnsureEventSystem()
+    {
+        if (!FindObjectOfType<EventSystem>())
+        {
+            var go = new GameObject("EventSystem", typeof(EventSystem), typeof(StandaloneInputModule));
+            DontDestroyOnLoad(go);
+        }
     }
 }
