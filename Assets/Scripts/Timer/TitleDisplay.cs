@@ -52,6 +52,7 @@ public class TitleManager : MonoBehaviour
         {
             instructionsPanel.SetActive(true);
             instructionsManager.StartCoroutine(instructionsManager.TypeText());
+            // instructionsManager.StartInstructions();
         }
         else
         {

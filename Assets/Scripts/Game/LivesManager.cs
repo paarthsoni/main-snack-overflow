@@ -75,7 +75,7 @@ public class LivesManager : MonoBehaviour
             return;
         }
 
-        livesText.text = $"Remaining Lives: {lives}";
+        livesText.text = $"Remaining Beams: {lives}";
     }
 
     /// <summary>
