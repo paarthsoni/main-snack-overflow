@@ -4776,9 +4776,11 @@ MonoBehaviour:
   instructionsPanel: {fileID: 359235076}
   startButton: {fileID: 87574499}
   fullText: "Memorize the shapes and colors.\n\n\u2022 The color represents the impostor\u2019s
-    color.\n\u2022 The shape represents the impostor\u2019s movement path.\n\nFind
-    and eliminate impostors that match both color and shape.\nYou only have 3 beams
-    to catch them!\n\nControls: WASD / Arrow Keys\n"
+    color.  \n\u2022 The shape represents the impostor\u2019s movement path.  \n\nFind
+    and eliminate impostors that match both color and shape.  \nClick on a character
+    to catch them \u2014 but be careful!  \nIf you hit a civilian instead, you\u2019ll
+    lose one beam.  \n\nYou only have 3 beams to catch all impostors!  \n\nControls:
+    WASD / Arrow Keys & Mouse Click\n"
   typingSpeed: 0.02
   memoryBar: {fileID: 82438973}
   timerController: {fileID: 1472231006}
@@ -10306,9 +10308,11 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_text: "Memorize the shapes and colors.\n\n\u2022 The color represents the impostor\u2019s
-    color.\n\u2022 The shape represents the impostor\u2019s movement path.\n\nFind
-    and eliminate impostors that match both color and shape.\nYou only have 3 beams
-    to catch them!\n\nControls: WASD / Arrow Keys"
+    color.  \n\u2022 The shape represents the impostor\u2019s movement path.  \n\nFind
+    and eliminate impostors that match both color and shape.  \nClick on a character
+    to catch them \u2014 but be careful!  \nIf you hit a civilian instead, you\u2019ll
+    lose one beam.  \n\nYou only have 3 beams to catch all impostors!  \n\nControls:
+    WASD / Arrow Keys & Mouse Click\n"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -10335,8 +10339,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 40
-  m_fontSizeBase: 40
+  m_fontSize: 36
+  m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
