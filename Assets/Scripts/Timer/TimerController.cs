@@ -10,41 +10,30 @@ public class TimerController : MonoBehaviour
     public float startTime = 60f;
 
     [Header("Scene refs")]
-    public TextMeshProUGUI timerText;         
-    public GameObject gameOverPanel;           
+    public TextMeshProUGUI timerText;
+    public GameObject gameOverPanel;
     [Tooltip("If not assigned, we search any Canvas (even inactive) for this name.")]
     public string gameOverPanelName = "GameOver Panel";
     [Tooltip("Name of the Retry button inside the GameOver panel.")]
     public string retryButtonName = "Retry";
+    [Tooltip("Child TMP name inside the GameOver Panel where the score is written.")]
+    public string scoreTextName = "ScoreText";
 
     float currentTime;
     bool isGameOver = false;
     bool isRunning  = false;
-
     bool _reloading = false;
 
     const int TOP_SORT_ORDER = 5000;
 
-    void Awake()
-    {
-        SceneManager.sceneLoaded += OnSceneLoaded;
-    }
+    void Awake() => SceneManager.sceneLoaded += OnSceneLoaded;
+    void OnDestroy() => SceneManager.sceneLoaded -= OnSceneLoaded;
 
-    void OnDestroy()
-    {
-        SceneManager.sceneLoaded -= OnSceneLoaded;
-    }
-
-    void Start()
-    {
-        ResetAndShowPaused(); 
-    }
+    void Start() => ResetAndShowPaused();
 
     void OnSceneLoaded(Scene s, LoadSceneMode mode)
     {
         if (Time.timeScale == 0f) Time.timeScale = 1f;
-
-        
         _reloading = false;
 
         EnsureEventSystem();
@@ -58,10 +47,9 @@ public class TimerController : MonoBehaviour
 
         if (!gameOverPanel)
             gameOverPanel = FindPanelByNameIncludingInactive(gameOverPanelName);
-
         if (gameOverPanel) gameOverPanel.SetActive(false);
 
-        BindRetryButton();     
+        BindRetryButton();
         ResetAndShowPaused();
     }
 
@@ -73,8 +61,7 @@ public class TimerController : MonoBehaviour
         currentTime = Mathf.Clamp(currentTime, 0f, startTime);
         UpdateTimerUI();
 
-        if (currentTime <= 0f)
-            GameOver();
+        if (currentTime <= 0f) GameOver();
     }
 
     public void StartTimer(float seconds = -1f)
@@ -91,7 +78,7 @@ public class TimerController : MonoBehaviour
         UpdateTimerUI();
     }
 
-    public void StopTimer()     => isRunning = false;
+    public void StopTimer() => isRunning = false;
 
     public void ResumeTimer()
     {
@@ -102,11 +89,9 @@ public class TimerController : MonoBehaviour
 
     public void Retry()
     {
-        
         if (_reloading) return;
         _reloading = true;
 
-        
         Time.timeScale = 1f;
         SceneManager.LoadSceneAsync(SceneManager.GetActiveScene().name, LoadSceneMode.Single);
     }
@@ -132,18 +117,50 @@ public class TimerController : MonoBehaviour
         isGameOver = true;
         isRunning  = false;
 
+        // FILL THE SCORE TEXT *BEFORE* SHOWING THE PANEL
+        TryFillGameOverScore();
+
         ShowPanelOnTopAndMakeClickable(gameOverPanel);
         Time.timeScale = 0f;
     }
 
-    
+    // --- score fill ---
+    void TryFillGameOverScore()
+    {
+        if (!gameOverPanel) return;
+
+        TextMeshProUGUI scoreTMP = null;
+        var tmps = gameOverPanel.GetComponentsInChildren<TextMeshProUGUI>(true);
+        foreach (var t in tmps)
+            if (t.name == scoreTextName) { scoreTMP = t; break; }
+
+        if (!scoreTMP)
+        {
+            Debug.Log("[TimerController] ScoreText not found under GameOver Panel (optional).");
+            return;
+        }
+
+        int total = 0, killed = 0, remaining = 0;
+        var tracker = ImpostorTracker.Instance ?? FindObjectOfType<ImpostorTracker>(true);
+        if (tracker != null)
+        {
+            killed    = tracker.Killed;
+            remaining = tracker.Remaining;
+            total     = tracker.TotalSpawned;
+
+            if (total <= 0) total = killed + remaining; // fallback
+        }
+
+        scoreTMP.text = $"You eliminated {killed} out of {total} imposters!";
+    }
+
+    // --- helpers ---
     void EnsureEventSystem()
     {
         if (!FindObjectOfType<EventSystem>())
         {
             var go = new GameObject("EventSystem", typeof(EventSystem), typeof(StandaloneInputModule));
             DontDestroyOnLoad(go);
-            Debug.Log("[TimerController] Created EventSystem.");
         }
     }
 
@@ -159,18 +176,13 @@ public class TimerController : MonoBehaviour
                 if (t.name == panelName)
                     return t.gameObject;
         }
-        return GameObject.Find(panelName); 
+        return GameObject.Find(panelName);
     }
 
     void ShowPanelOnTopAndMakeClickable(GameObject panel)
     {
-        if (!panel)
-        {
-            
-            return;
-        }
+        if (!panel) return;
 
-        
         var t = panel.transform;
         while (t != null)
         {
@@ -186,7 +198,6 @@ public class TimerController : MonoBehaviour
             t = t.parent;
         }
 
-        
         var topCanvas = panel.GetComponent<Canvas>();
         if (!topCanvas) topCanvas = panel.AddComponent<Canvas>();
         topCanvas.overrideSorting = true;
@@ -196,7 +207,6 @@ public class TimerController : MonoBehaviour
         var gr = panel.GetComponent<GraphicRaycaster>();
         if (!gr) panel.AddComponent<GraphicRaycaster>();
 
-        
         panel.transform.SetAsLastSibling();
 
         BindRetryButton();
@@ -206,13 +216,11 @@ public class TimerController : MonoBehaviour
     {
         if (!gameOverPanel) return;
 
-        
         Button retry = null;
         var buttons = gameOverPanel.GetComponentsInChildren<Button>(true);
         foreach (var b in buttons)
             if (b.name == retryButtonName) { retry = b; break; }
 
-        
         if (retry == null)
         {
             var texts = gameOverPanel.GetComponentsInChildren<TextMeshProUGUI>(true);
@@ -224,35 +232,19 @@ public class TimerController : MonoBehaviour
                 }
         }
 
-        if (retry == null)
-        {
-            
-            return;
-        }
+        if (retry == null) return;
 
-        
         if (retry.targetGraphic != null)
             retry.targetGraphic.raycastTarget = true;
 
-        
         retry.onClick.RemoveAllListeners();
-        retry.onClick.AddListener(() =>
-        {
-            
-            Retry();
-        });
+        retry.onClick.AddListener(Retry);
 
-        
         var et = retry.gameObject.GetComponent<EventTrigger>();
         if (et && et.triggers != null)
         {
-            
             et.triggers.RemoveAll(e => e != null && e.eventID == EventTriggerType.PointerClick);
-            
-            if (et.triggers.Count == 0)
-            {
-                Destroy(et);
-            }
+            if (et.triggers.Count == 0) Destroy(et);
         }
     }
 }
