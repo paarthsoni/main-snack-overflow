@@ -15,11 +15,29 @@ public class Sunbeam : MonoBehaviour
     private Action onImpact;
     private bool hasImpacted;
 
-    public void Init(Transform target, Action onImpact)
+    public void Init(Transform target, Action onImpact, bool isImposter = false)
     {
         this.target = target;
         this.onImpact = onImpact;
+
+        lr = GetComponent<LineRenderer>();
+
+        Color beamColor = isImposter ? Color.red : Color.yellow;
+
+        lr.startColor = beamColor;
+        lr.endColor = beamColor;
+
+        if (lr.material != null)
+        {
+            if (lr.material.HasProperty("_Color"))
+                lr.material.color = beamColor;
+
+            if (lr.material.HasProperty("_EmissionColor"))
+                lr.material.SetColor("_EmissionColor", beamColor * 2f);
+        }
     }
+
+
 
     void Awake()
     {
