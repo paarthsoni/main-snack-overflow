@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using TMPro;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -186,6 +186,10 @@ RectTransform _rt;
         ShowPanelOnTopAndMakeClickable(gameOverPanel);
 
         SetTopLeftButtonsVisible(false);
+
+        // 🔹 Analytics: record a failed attempt (timeout)
+        if (AnalyticsManager.I != null)
+            AnalyticsManager.I.EndAttemptFail();
 
         Time.timeScale = 0f;
     }

@@ -58,6 +58,10 @@ public class PauseRestartUI : MonoBehaviour
 
         if (paused)
         {
+
+            if (AnalyticsManager.I != null)
+                AnalyticsManager.I.RegisterPauseClicked();
+
             Time.timeScale = 0f;
             if (timer) timer.StopTimer();
             SetButtonLabel(pauseButton, "Resume");

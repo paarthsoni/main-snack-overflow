@@ -92,7 +92,11 @@ public class ImpostorTracker : MonoBehaviour
             timer.SetTopLeftButtonsVisible(false);   
         }
     }
-}
+
+     if (AnalyticsManager.I != null)
+        AnalyticsManager.I.EndAttemptSuccess();
+
+    }
 
 
 

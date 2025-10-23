@@ -64313,6 +64313,73 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1297721819}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &1298239731
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1298239734}
+  - component: {fileID: 1298239733}
+  - component: {fileID: 1298239732}
+  m_Layer: 0
+  m_Name: Analytics
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1298239732
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1298239731}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 228ee16ae5325dc438229cf0cd94bbdf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  formURL: https://docs.google.com/forms/u/0/d/1P8rR4AOV8ZMf45L2DIcudoTJKeFQ2eBPT77Nwn9rsa4/formResponse
+  e_sessionId: entry.1330219283
+  e_levelId: entry.1013061301
+  e_shotsFired: entry.650746069
+  e_correctHits: entry.1310355990
+  e_accuracyPct: entry.792927461
+  e_timeTakenSec: entry.1684774599
+  e_completed: entry.1419990853
+  e_pauseClicks: entry.1105048103
+--- !u!114 &1298239733
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1298239731}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7e6ec74d7e0489f40be61d4c8b80ab6e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sender: {fileID: 0}
+--- !u!4 &1298239734
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1298239731}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1300405061
 GameObject:
   m_ObjectHideFlags: 0
@@ -105351,3 +105418,4 @@ SceneRoots:
   - {fileID: 1672995373}
   - {fileID: 1193292837}
   - {fileID: 230281258}
+  - {fileID: 1298239734}

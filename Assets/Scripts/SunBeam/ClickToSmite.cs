@@ -1,79 +1,80 @@
-// using UnityEngine;
-// using UnityEngine.EventSystems;
+//using UnityEngine;
+//using UnityEngine.EventSystems;
 
-// public class ClickToSmite : MonoBehaviour
-// {
-//     public LayerMask npcLayer; // set to NPC layer in Inspector
+//public class ClickToSmite : MonoBehaviour
+//{
+//    public LayerMask npcLayer; // set to NPC layer in Inspector
 
-//     void Update()
-//     {
-//         if (Input.GetMouseButtonDown(0))
-//         {
-//             if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
-//                 return;
+//    void Update()
+//    {
+//        if (Input.GetMouseButtonDown(0))
+//        {
+//            // Ignore UI clicks
+//            if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
+//                return;
 
-//             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-//             if (Physics.Raycast(ray, out RaycastHit hit, 200f, npcLayer))
-//             {
-//                 var death = hit.collider.GetComponentInParent<NPCDeath>();
-//                 if (death != null)
-//                     SunbeamManager.Instance.Smite(death);
-//             }
-//         }
-//     }
-// }
+//            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+//            if (Physics.Raycast(ray, out RaycastHit hit, 200f, npcLayer))
+//            {
+//                var death = hit.collider.GetComponentInParent<NPCDeath>();
+//                if (death == null) return;
 
+//                var id = hit.collider.GetComponentInParent<NPCIdentity>();
+//                var grs = GameRoundState.Instance;
 
-// using UnityEngine;
-// using UnityEngine.EventSystems;
+//                // If no ID, treat as wrong civilian
+//                if (id == null)
+//                {
+//                    HandleWrong(death);
+//                    return;
+//                }
 
-// public class ClickToSmite : MonoBehaviour
-// {
-//     public LayerMask npcLayer; // set to NPC layer in Inspector
+//                bool correct = (grs != null) && grs.MatchesAllowed(id.shapeType, id.colorId);
 
-//     void Update()
-//     {
-//         if (Input.GetMouseButtonDown(0))
-//         {
-//             if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
-//                 return;
+//                if (correct)
+//                {
+//                    HandleCorrect(death, id);
+//                }
+//                else
+//                {
+//                    HandleWrong(death);
+//                }
+//            }
+//        }
+//    }
 
-//             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-//             if (Physics.Raycast(ray, out RaycastHit hit, 200f, npcLayer))
-//             {
-//                 var death = hit.collider.GetComponentInParent<NPCDeath>();
-//                 if (death == null) return;
+//    void HandleCorrect(NPCDeath death, NPCIdentity id)
+//    {
+//        // Disable colliders immediately so we don't double count
+//        PreventDoubleHit(death);
 
-//                 var id = hit.collider.GetComponentInParent<NPCIdentity>();
-//                 if (id == null) { WrongHit(); return; }
+//        // Notify that an impostor was killed
+//        if (id != null && id.isImpostor)
+//            ImpostorTracker.Instance?.OnImpostorKilled();
 
-//                 // Compare against the allowed (shape, colorId) pairs from the memory bar
-//                 var grs = GameRoundState.Instance;
-//                 bool correct = (grs != null) && grs.MatchesAllowed(id.shapeType, id.colorId);
+//        // Beam + delete NPC
+//        SunbeamManager.Instance.Smite(death);
+//    }
 
-//                 if (correct)
-// {
-//     // Correct → lethal beam + kill, lives unchanged
-//     SunbeamManager.Instance.Smite(death);
-// }
-// else
-// {
-//     // Wrong → lethal beam + kill, AND lose a life
-//     SunbeamManager.Instance.Smite(death);
-//     if (LivesManager.Instance != null)
-//         LivesManager.Instance.LoseLife();
-// }
-//             }
-//         }
-//     }
+//    void HandleWrong(NPCDeath death)
+//    {
+//        PreventDoubleHit(death);
 
-//     void WrongHit()
-//     {
-//         if (LivesManager.Instance != null)
-//             LivesManager.Instance.LoseLife();
-//         // (Optional) play a fail SFX or small UI flash here
-//     }
-// }
+//        // Beam + delete NPC
+//        SunbeamManager.Instance.Smite(death);
+
+//        // Lose a life on wrong hit
+//        if (LivesManager.Instance != null)
+//            LivesManager.Instance.LoseLife();
+//    }
+
+//    void PreventDoubleHit(NPCDeath death)
+//    {
+//        var cols = death.GetComponentsInChildren<Collider>(false);
+//        for (int i = 0; i < cols.Length; i++)
+//            cols[i].enabled = false;
+//    }
+//}
 
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -89,6 +90,10 @@ public class ClickToSmite : MonoBehaviour
             // Ignore UI clicks
             if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
                 return;
+
+            // ✅ Player fired a shot — track it right here
+            if (AnalyticsManager.I != null)
+                AnalyticsManager.I.OnShotFired();
 
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray, out RaycastHit hit, 200f, npcLayer))
@@ -125,6 +130,10 @@ public class ClickToSmite : MonoBehaviour
         // Disable colliders immediately so we don't double count
         PreventDoubleHit(death);
 
+        // ✅ Track correct hit
+        if (AnalyticsManager.I != null)
+            AnalyticsManager.I.OnCorrectHit();
+
         // Notify that an impostor was killed
         if (id != null && id.isImpostor)
             ImpostorTracker.Instance?.OnImpostorKilled();
@@ -136,6 +145,11 @@ public class ClickToSmite : MonoBehaviour
     void HandleWrong(NPCDeath death)
     {
         PreventDoubleHit(death);
+
+        // Optional: if you want to track total "wrong hits" separately
+        // you can add this too (your choice):
+        // if (AnalyticsManager.I != null)
+        //     AnalyticsManager.I.OnWrongHit();
 
         // Beam + delete NPC
         SunbeamManager.Instance.Smite(death);
