@@ -19,9 +19,13 @@ public class TimerController : MonoBehaviour
     [Tooltip("Child TMP name inside the GameOver Panel where the score is written.")]
     public string scoreTextName = "ScoreText";
 
+    [Header("Top-left UI")]
+    public GameObject topLeftButtonsRoot;   
+
+
     float currentTime;
     bool isGameOver = false;
-    bool isRunning  = false;
+    bool isRunning = false;
     bool _reloading = false;
 
     const int TOP_SORT_ORDER = 5000;
@@ -69,13 +73,16 @@ public class TimerController : MonoBehaviour
         if (seconds > 0f) startTime = seconds;
 
         currentTime = startTime;
-        isGameOver  = false;
-        isRunning   = true;
+        isGameOver = false;
+        isRunning = true;
 
         if (timerText) timerText.gameObject.SetActive(true);
         if (gameOverPanel) gameOverPanel.SetActive(false);
 
         UpdateTimerUI();
+
+        SetTopLeftButtonsVisible(true);
+
     }
 
     public void StopTimer() => isRunning = false;
@@ -98,7 +105,7 @@ public class TimerController : MonoBehaviour
 
     void ResetAndShowPaused()
     {
-        isRunning  = false;
+        isRunning = false;
         isGameOver = false;
         currentTime = Mathf.Max(0f, startTime);
         UpdateTimerUI();
@@ -115,16 +122,19 @@ public class TimerController : MonoBehaviour
     void GameOver()
     {
         isGameOver = true;
-        isRunning  = false;
+        isRunning = false;
 
-        // FILL THE SCORE TEXT *BEFORE* SHOWING THE PANEL
+        
         TryFillGameOverScore();
 
         ShowPanelOnTopAndMakeClickable(gameOverPanel);
+
+        SetTopLeftButtonsVisible(false);
+
         Time.timeScale = 0f;
     }
 
-    // --- score fill ---
+    
     void TryFillGameOverScore()
     {
         if (!gameOverPanel) return;
@@ -144,17 +154,17 @@ public class TimerController : MonoBehaviour
         var tracker = ImpostorTracker.Instance ?? FindObjectOfType<ImpostorTracker>(true);
         if (tracker != null)
         {
-            killed    = tracker.Killed;
+            killed = tracker.Killed;
             remaining = tracker.Remaining;
-            total     = tracker.TotalSpawned;
+            total = tracker.TotalSpawned;
 
-            if (total <= 0) total = killed + remaining; // fallback
+            if (total <= 0) total = killed + remaining; 
         }
 
         scoreTMP.text = $"You eliminated {killed} out of {total} imposters!";
     }
 
-    // --- helpers ---
+   
     void EnsureEventSystem()
     {
         if (!FindObjectOfType<EventSystem>())
@@ -247,4 +257,72 @@ public class TimerController : MonoBehaviour
             if (et.triggers.Count == 0) Destroy(et);
         }
     }
+
+    public void SetTopLeftButtonsVisible(bool visible)
+{
+    var go = topLeftButtonsRoot ? topLeftButtonsRoot : GameObject.Find("TopLeftButtons");
+    if (go) go.SetActive(visible);
+}
+
+    
+public void PreparePanelForClicks(GameObject panel)
+{
+    if (!panel) return;
+
+    
+    var t = panel.transform;
+    while (t != null)
+    {
+        if (!t.gameObject.activeSelf) t.gameObject.SetActive(true);
+        var cg = t.GetComponent<CanvasGroup>();
+        if (cg) { cg.alpha = 1f; cg.interactable = true; cg.blocksRaycasts = true; }
+        t = t.parent;
+    }
+
+    
+    var c = panel.GetComponent<Canvas>();
+    if (!c) c = panel.AddComponent<Canvas>();
+    c.overrideSorting = true;
+    c.sortingOrder = 5000;         
+    c.renderMode = RenderMode.ScreenSpaceOverlay;
+
+    if (!panel.GetComponent<GraphicRaycaster>())
+        panel.AddComponent<GraphicRaycaster>();
+
+    panel.transform.SetAsLastSibling();
+}
+
+
+public void WireButtonToRetry(GameObject root, string buttonNameOrText = "Exit")
+{
+    if (!root) return;
+
+    Button target = null;
+
+    
+    foreach (var b in root.GetComponentsInChildren<Button>(true))
+        if (b.name == buttonNameOrText) { target = b; break; }
+
+    
+    if (!target)
+    {
+        foreach (var tmp in root.GetComponentsInChildren<TMPro.TextMeshProUGUI>(true))
+        {
+            var txt = tmp.text.Trim().ToLower();
+            if (txt.Contains(buttonNameOrText.Trim().ToLower()))
+            {
+                target = tmp.GetComponentInParent<Button>(true);
+                if (target) break;
+            }
+        }
+    }
+
+    if (!target) return;
+
+    if (target.targetGraphic) target.targetGraphic.raycastTarget = true;
+    target.onClick.RemoveAllListeners();
+    target.onClick.AddListener(Retry);   
+}
+
+
 }

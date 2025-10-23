@@ -10,14 +10,14 @@ public class ImpostorTracker : MonoBehaviour
     public bool disableClicksOnWin = true;
     bool winSequenceStarted = false;
 
-    // How long to wait for the beam to fully play out (charge + impact + fade)
+    
     public float winDelayAfterLastHit = 0.82f;
 
     [Header("UI")]
-    public TMP_Text impostorText;     // optional (legacy label)
-    public GameObject winPanel;       // WinPanel (optional)
+    public TMP_Text impostorText;     
+    public GameObject winPanel;       
 
-    // ---- NEW: public scoreboard data ----
+    
     public int TotalSpawned { get; private set; } = 0;
     public int Killed       { get; private set; } = 0;
     public int Remaining    => remaining;
@@ -32,31 +32,31 @@ public class ImpostorTracker : MonoBehaviour
         UpdateUI();
     }
 
-    // Call when beginning a new round (or on scene load)
+    
     public void ResetCount()
     {
         remaining = 0;
-        TotalSpawned = 0;   // reset scoreboard
-        Killed = 0;         // reset scoreboard
+        TotalSpawned = 0;   
+        Killed = 0;         
         UpdateUI();
         if (winPanel) winPanel.SetActive(false);
         winSequenceStarted = false;
     }
 
-    // Call each time an impostor is spawned
+    
     public void RegisterImpostor()
     {
         remaining++;
-        TotalSpawned++;     // track total
+        TotalSpawned++;     
         UpdateUI();
     }
 
-    // Call when an impostor is successfully killed
+    
     public void OnImpostorKilled()
     {
-        if (remaining <= 0) return; // safety
+        if (remaining <= 0) return; 
         remaining--;
-        Killed++;                    // track kills
+        Killed++;                    
         UpdateUI();
 
         if (remaining <= 0 && !winSequenceStarted)
@@ -66,24 +66,35 @@ public class ImpostorTracker : MonoBehaviour
         }
     }
 
-    System.Collections.IEnumerator WinAfterBeam()
+   System.Collections.IEnumerator WinAfterBeam()
+{
+    yield return new WaitForSecondsRealtime(winDelayAfterLastHit);
+
+    var timer = FindObjectOfType<TimerController>(true);
+    if (timer) timer.StopTimer();
+
+    if (pauseOnWin) Time.timeScale = 0f;
+
+    if (disableClicksOnWin)
     {
-        yield return new WaitForSecondsRealtime(winDelayAfterLastHit);
-
-        // Stop the game timer
-        var timer = FindObjectOfType<TimerController>(true);
-        if (timer) timer.StopTimer();
-
-        if (pauseOnWin) Time.timeScale = 0f;
-
-        if (disableClicksOnWin)
-        {
-            var click = FindObjectOfType<ClickToSmite>(true);
-            if (click) click.enabled = false;
-        }
-
-        if (winPanel) winPanel.SetActive(true);
+        var click = FindObjectOfType<ClickToSmite>(true);
+        if (click) click.enabled = false;
     }
+
+    if (winPanel)
+    {
+        winPanel.SetActive(true);
+
+        if (timer)
+        {
+            timer.PreparePanelForClicks(winPanel);
+            timer.WireButtonToRetry(winPanel, "Exit");
+            timer.SetTopLeftButtonsVisible(false);   
+        }
+    }
+}
+
+
 
     void UpdateUI()
     {

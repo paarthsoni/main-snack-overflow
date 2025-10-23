@@ -29079,7 +29079,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Retry
+  m_text: Exit
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -29194,6 +29194,7 @@ MonoBehaviour:
   gameOverPanelName: GameOver Panel
   retryButtonName: Retry
   scoreTextName: ScoreText
+  topLeftButtonsRoot: {fileID: 914836417}
 --- !u!4 &1472231007
 Transform:
   m_ObjectHideFlags: 0
