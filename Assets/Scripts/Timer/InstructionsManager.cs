@@ -163,6 +163,104 @@
 
 
 
+// using UnityEngine;
+// using UnityEngine.UI;
+// using TMPro;
+// using System.Collections;
+
+// public class InstructionsManager : MonoBehaviour
+// {
+//     [Header("UI References")]
+//     public TextMeshProUGUI instructionsText;
+//     public GameObject instructionsPanel;
+//     public Button startButton;
+//     public Button skipButton;
+
+
+//     [TextArea(3, 10)]
+//     public string fullText =
+//         "Memorize the shapes and colors.\n\n" +
+//         "• The color represents the impostor’s color.\n" +
+//         "• The shape represents the impostor’s movement path.\n\n" +
+//         "Find and eliminate impostors that match both color and shape.\n" +
+//         "You only have 3 beams to catch them!\n\n" +
+//         "Controls: WASD / Arrow Keys";
+
+//     public float typingSpeed = 0.02f;
+
+//     [Header("Game Flow")]
+//     public MemoryBarController memoryBar;
+//     public TimerController timerController;
+//     public GameObject[] enableOnGameplay;
+
+//     void Start()
+//     {
+//         Time.timeScale = 0f;
+//         startButton.gameObject.SetActive(false);
+//         skipButton.gameObject.SetActive(true);
+//         startButton.onClick.AddListener(OnStartClicked);
+//         skipButton.onClick.AddListener(SkipIntro);
+
+//         if (memoryBar != null)
+//             memoryBar.OnMemoryPhaseComplete += HandleMemoryComplete;
+
+//         instructionsPanel.SetActive(false);
+//     }
+
+//     void OnDestroy()
+//     {
+//         startButton.onClick.RemoveListener(OnStartClicked);
+//         if (memoryBar != null)
+//             memoryBar.OnMemoryPhaseComplete -= HandleMemoryComplete;
+//     }
+
+//     public void StartInstructions()
+//     {
+//         instructionsPanel.SetActive(true);
+//         StartCoroutine(TypeText());
+//     }
+
+//     public IEnumerator TypeText()
+//     {
+//         instructionsText.text = "";
+//         foreach (char c in fullText)
+//         {
+//             instructionsText.text += c;
+//             yield return new WaitForSecondsRealtime(typingSpeed);
+//         }
+//         yield return new WaitForSecondsRealtime(0.5f);
+//         startButton.gameObject.SetActive(true);
+//     }
+
+//     void OnStartClicked()
+//     {
+//         instructionsPanel.SetActive(false);
+//         if (memoryBar != null)
+//             memoryBar.BeginMemoryPhase();
+//     }
+
+//     void HandleMemoryComplete()
+//     {
+//         if (timerController != null)
+//             timerController.StartTimer(60f);
+
+//         FindObjectOfType<SpawnManager>()?.StartSpawning();
+
+//         if (enableOnGameplay != null)
+//         {
+//             foreach (var go in enableOnGameplay)
+//                 if (go) go.SetActive(true);
+//         }
+//     }
+//     void SkipIntro()
+//     {
+//         StopAllCoroutines();
+//         instructionsText.text = fullText; // instantly show the full text
+//         startButton.gameObject.SetActive(true); // allow player to proceed
+//         skipButton.gameObject.SetActive(false); // hide skip button
+//     }
+// }
+
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -174,6 +272,7 @@ public class InstructionsManager : MonoBehaviour
     public TextMeshProUGUI instructionsText;
     public GameObject instructionsPanel;
     public Button startButton;
+    public Button skipButton;   // NEW: assign in Inspector
 
     [TextArea(3, 10)]
     public string fullText =
@@ -193,23 +292,32 @@ public class InstructionsManager : MonoBehaviour
 
     void Start()
     {
+        // Pause gameplay while instructions are up
         Time.timeScale = 0f;
+
         startButton.gameObject.SetActive(false);
+        if (skipButton) skipButton.gameObject.SetActive(true);
+
         startButton.onClick.AddListener(OnStartClicked);
+        if (skipButton) skipButton.onClick.AddListener(SkipIntro);
 
         if (memoryBar != null)
             memoryBar.OnMemoryPhaseComplete += HandleMemoryComplete;
 
+        // Panel is shown by calling StartInstructions() from your flow
         instructionsPanel.SetActive(false);
     }
 
     void OnDestroy()
     {
         startButton.onClick.RemoveListener(OnStartClicked);
+        if (skipButton) skipButton.onClick.RemoveListener(SkipIntro);
+
         if (memoryBar != null)
             memoryBar.OnMemoryPhaseComplete -= HandleMemoryComplete;
     }
 
+    // Call this from your entry point to show instructions
     public void StartInstructions()
     {
         instructionsPanel.SetActive(true);
@@ -217,31 +325,61 @@ public class InstructionsManager : MonoBehaviour
     }
 
     public IEnumerator TypeText()
+{
+    instructionsText.text = "";
+    if (skipButton) skipButton.gameObject.SetActive(true); // visible while typing
+
+    foreach (char c in fullText)
     {
-        instructionsText.text = "";
-        foreach (char c in fullText)
-        {
-            instructionsText.text += c;
-            yield return new WaitForSecondsRealtime(typingSpeed);
-        }
-        yield return new WaitForSecondsRealtime(0.5f);
-        startButton.gameObject.SetActive(true);
+        instructionsText.text += c;
+        yield return new WaitForSecondsRealtime(typingSpeed);
     }
 
+    yield return new WaitForSecondsRealtime(0.5f);
+
+    if (skipButton) skipButton.gameObject.SetActive(false); // hide after typing done
+    startButton.gameObject.SetActive(true);
+}
+
+
+    // START = hide panel, begin memory phase ONLY (no timer/spawn here)
     void OnStartClicked()
     {
         instructionsPanel.SetActive(false);
+        if (skipButton) skipButton.gameObject.SetActive(false);
+
+        // Keep the game paused; MemoryBar handles pause/blur and will unpause when it ends
         if (memoryBar != null)
             memoryBar.BeginMemoryPhase();
     }
 
+    // SKIP = same as START, but instantly (no typing)
+    void SkipIntro()
+    {
+        StopAllCoroutines();                 // stop typing
+        instructionsPanel.SetActive(false);  // hide panel immediately
+        if (skipButton) skipButton.gameObject.SetActive(false);
+
+        // Begin memory phase ONLY — no timer/spawn here to avoid duplicates
+        if (memoryBar != null)
+            memoryBar.BeginMemoryPhase();
+    }
+
+    // This is the ONLY place that starts timer & spawns
     void HandleMemoryComplete()
     {
+        // Resume gameplay time (MemoryBar typically unpauses, but this is safe)
+        Time.timeScale = 1f;
+
         if (timerController != null)
             timerController.StartTimer(60f);
 
-        FindObjectOfType<SpawnManager>()?.StartSpawning();
+        // Spawn once, right after memory phase completes
+        var spawner = FindObjectOfType<SpawnManager>();
+        if (spawner != null)
+            spawner.StartSpawning();
 
+        // Enable gameplay HUD / inputs
         if (enableOnGameplay != null)
         {
             foreach (var go in enableOnGameplay)
