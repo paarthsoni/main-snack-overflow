@@ -19,13 +19,35 @@ public class SunbeamManager : MonoBehaviour
     {
         if (npcDeath == null) return;
 
-        // Get impostor flag from NPCIdentity
-        var identity = npcDeath.GetComponent<NPCIdentity>();
-        bool isImpostor = identity != null && identity.isImpostor;
+        // 1) Check impostor flag from NPCIdentity
+        var identity   = npcDeath.GetComponent<NPCIdentity>();
+        bool isImpostor = identity != null && identity.isImpostor; // uses your flag:contentReference[oaicite:2]{index=2}
 
-        var go = Instantiate(sunbeamPrefab);
+        // 2) Spawn and init beam
+        var go   = Instantiate(sunbeamPrefab);
         var beam = go.GetComponent<Sunbeam>();
 
-        beam.Init(npcDeath.transform, () => npcDeath.DieCute(), isImpostor);
+        // 3) Wrap the "on hit" callback so we can show the popup AND then do the cute death
+        void OnBeamHit()
+        {
+            if (isImpostor)
+            {
+                // Center-screen popup for ~1–2s (your ImposterKilledText/Popup controller)
+                KillTextController.Instance?.Show("Imposter Killed");
+                // (Optional) score/remaining-impostors bookkeeping can go here too
+                // ImpostorTracker.Instance?.OnImpostorKilled();
+            }
+            else
+            {
+                // Optional feedback when player taps a civilian
+                KillTextController.Instance?.Show("Civilian Killed!");
+            }
+
+            // Finally, do the shrink-and-destroy
+            npcDeath.DieCute(); // your existing cute death:contentReference[oaicite:3]{index=3}
+        }
+
+        // Pass: target transform, on-hit callback, and impostor flag (for beam color, etc.)
+        beam.Init(npcDeath.transform, OnBeamHit, isImpostor);
     }
 }

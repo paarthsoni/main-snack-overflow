@@ -28,6 +28,25 @@ public class TimerController : MonoBehaviour
     bool isRunning = false;
     bool _reloading = false;
 
+    [Header("Visual FX")]
+    public float warningThreshold = 15f;                 // last N seconds
+    public Color normalColor = Color.white;
+    public Color warningColor = new Color(0.55f, 0f, 0f, 1f);   // dark red
+
+    [Tooltip("Normal (smaller) font size.")]
+    public float baseFontSize = 36f;
+
+    [Tooltip("Font size during warning (slightly larger).")]
+    public float warningFontSize = 44f;
+
+    [Tooltip("Beat/pulse scale range during warning.")]
+    public float pulseScaleMin = 0.95f, pulseScaleMax = 1.15f;
+
+    [Tooltip("Beating speed (Hz-ish).")]
+    public float pulseSpeed = 5f;
+
+RectTransform _rt;
+
     const int TOP_SORT_ORDER = 5000;
 
     void Awake() => SceneManager.sceneLoaded += OnSceneLoaded;
@@ -48,6 +67,14 @@ public class TimerController : MonoBehaviour
             if (go) timerText = go.GetComponent<TextMeshProUGUI>();
         }
         if (timerText) timerText.gameObject.SetActive(true);
+
+        if (timerText)
+        {
+            _rt = timerText.rectTransform;
+            timerText.color = normalColor;
+            timerText.fontSize = baseFontSize;
+            _rt.localScale = Vector3.one;
+        }
 
         if (!gameOverPanel)
             gameOverPanel = FindPanelByNameIncludingInactive(gameOverPanelName);
@@ -112,15 +139,44 @@ public class TimerController : MonoBehaviour
     }
 
     void UpdateTimerUI()
+{
+    if (!timerText) return;
+
+    int m = Mathf.FloorToInt(currentTime / 60f);
+    int s = Mathf.FloorToInt(currentTime % 60f);
+    timerText.text = $"{m:00}:{s:00}";
+
+    // --- visual state ---
+    bool inWarning = isRunning && !isGameOver && currentTime <= warningThreshold && currentTime > 0f;
+
+    if (!inWarning)
     {
-        if (!timerText) return;
-        int m = Mathf.FloorToInt(currentTime / 60f);
-        int s = Mathf.FloorToInt(currentTime % 60f);
-        timerText.text = $"{m:00}:{s:00}";
+        // normal state
+        timerText.color = normalColor;
+        timerText.fontSize = baseFontSize;
+        if (_rt) _rt.localScale = Vector3.one;
     }
+    else
+    {
+        // warning state: dark red + beating
+        timerText.color = warningColor;
+        timerText.fontSize = warningFontSize;
+
+        if (_rt)
+        {
+            // nice smooth beat using sine
+            float t = (Mathf.Sin(Time.unscaledTime * pulseSpeed) + 1f) * 0.5f;
+            float sc = Mathf.Lerp(pulseScaleMin, pulseScaleMax, t);
+            _rt.localScale = new Vector3(sc, sc, 1f);
+        }
+    }
+}
+
 
     void GameOver()
     {
+        if (_rt) _rt.localScale = Vector3.one;
+
         isGameOver = true;
         isRunning = false;
 
