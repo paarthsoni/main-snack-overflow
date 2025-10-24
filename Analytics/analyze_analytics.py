@@ -101,44 +101,33 @@ def placeholder_plot(title, path):
     plt.close()
 
 
-def plot_accuracy_vs_completion(df, out_dir: Path):
-    path = out_dir / "accuracy_vs_completion_bar.png"
+def plot_accuracy_histogram(df, out_dir: Path, bin_size: int = 10):
+    """Histogram of session accuracy in 10% bins (0–10, 10–20, …)."""
+    path = out_dir / "accuracy_histogram.png"
     if len(df) == 0:
-        placeholder_plot("Average Hit Accuracy by Outcome", path)
+        placeholder_plot("Accuracy Distribution (Histogram)", path)
         return
-    
-    avg = (
-        df.groupby("outcome")["accuracy_pct"]
-          .mean()
-          .reindex(["Loss", "Win"])
-          .fillna(0)
+
+    # Bin accuracy values into 10% intervals
+    bins = np.arange(0, 100 + bin_size, bin_size)  # 0..100 step 10
+    counts, edges = np.histogram(df["accuracy_pct"].clip(0, 100), bins=bins)
+    centers = edges[:-1] + (bin_size / 2.0)
+
+    plt.figure(figsize=(7, 4))
+    plt.bar(
+        centers,
+        counts,
+        width=bin_size * 0.9,
+        color=COLORS["blue"],
+        edgecolor="white",
+        linewidth=0.6,
+        alpha=0.9,
     )
-
-    plt.figure()
-    bars = plt.bar(
-        avg.index,
-        avg.values,
-        color=[COLORS["red"], COLORS["green"]],
-        edgecolor="black",
-        alpha=0.8,
-    )
-
-    for bar in bars:
-        height = bar.get_height()
-        plt.text(
-            bar.get_x() + bar.get_width() / 2,
-            height + 1,
-            f"{height:.1f}%",
-            ha="center",
-            va="bottom",
-            fontsize=10,
-            color="black",
-            fontweight="bold"
-        )
-
-    plt.ylabel("Average Hit Accuracy (%)")
-    plt.title("Average Hit Accuracy by Outcome")
-    plt.ylim(0, 100)
+    plt.xlabel("Accuracy (%)")
+    plt.ylabel("Number of Sessions")
+    plt.title("Distribution of Shooting Accuracy (10% Bins)")
+    plt.xticks(edges, rotation=0)
+    plt.grid(axis="y", linestyle="--", alpha=0.4)
     plt.tight_layout()
     plt.savefig(path)
     plt.close()
@@ -281,7 +270,7 @@ def main():
     df = load_and_clean(Path(args.csv))
     df.to_csv(out_dir / "cleaned_analytics.csv", index=False)
 
-    plot_accuracy_vs_completion(df, out_dir)
+    plot_accuracy_histogram(df, out_dir, bin_size=10)
     plot_completion_rate(df, out_dir)
     plot_time_by_outcome(df, out_dir)
     plot_pauses_hist(df, out_dir)
