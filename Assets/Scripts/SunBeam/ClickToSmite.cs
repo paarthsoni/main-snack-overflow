@@ -91,10 +91,6 @@ public class ClickToSmite : MonoBehaviour
             if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
                 return;
 
-            // ✅ Player fired a shot — track it right here
-            if (AnalyticsManager.I != null)
-                AnalyticsManager.I.OnShotFired();
-
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray, out RaycastHit hit, 200f, npcLayer))
             {
@@ -130,6 +126,8 @@ public class ClickToSmite : MonoBehaviour
         // Disable colliders immediately so we don't double count
         PreventDoubleHit(death);
 
+        TrackShotFired();
+
         // ✅ Track correct hit
         if (AnalyticsManager.I != null)
             AnalyticsManager.I.OnCorrectHit();
@@ -145,6 +143,8 @@ public class ClickToSmite : MonoBehaviour
     void HandleWrong(NPCDeath death)
     {
         PreventDoubleHit(death);
+
+        TrackShotFired();
 
         // Optional: if you want to track total "wrong hits" separately
         // you can add this too (your choice):
@@ -164,5 +164,11 @@ public class ClickToSmite : MonoBehaviour
         var cols = death.GetComponentsInChildren<Collider>(false);
         for (int i = 0; i < cols.Length; i++)
             cols[i].enabled = false;
+    }
+
+    void TrackShotFired()
+    {
+        if (AnalyticsManager.I != null)
+            AnalyticsManager.I.OnShotFired();
     }
 }
