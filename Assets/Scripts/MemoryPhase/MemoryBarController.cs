@@ -363,6 +363,10 @@ public class MemoryBarController : MonoBehaviour
         
         canvasGroup.alpha = 0f;
         rootBar.SetActive(false);
+
+        // Ensure the first frame renders the actual scene (WebGL would otherwise show black)
+        // while keeping whatever blur GameObjects were configured in the scene.
+        if (mainCamera) mainCamera.targetTexture = null;
     }
 
     
