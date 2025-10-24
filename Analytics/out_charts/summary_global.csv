@@ -1,0 +1,2 @@
+sessions,completion_rate_pct,mean_accuracy_pct,median_accuracy_pct,mean_time_s,median_time_s,mean_pauses
+1,0.0,32.5,32.5,31.135,31.135,1.0

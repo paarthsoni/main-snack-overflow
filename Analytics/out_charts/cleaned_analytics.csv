@@ -1,0 +1,3 @@
+session_id,level_id,shots_fired,correct_hits,time_taken_s,pauses,completed,accuracy_pct,outcome
+9c457de045f1406dbdba14b59ae5b4af,LvL1,8,2,30.07,0,0,25,Loss
+9c457de045f1406dbdba14b59ae5b4af,LvL1,5,2,32.2,2,0,40,Loss

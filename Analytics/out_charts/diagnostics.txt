@@ -1,0 +1,5 @@
+Rows after cleaning: 2
+Unique sessions: 1
+Levels: LvL1
+Corr(completed, accuracy_pct): nan
+Corr(completed, time_taken_s): nan
