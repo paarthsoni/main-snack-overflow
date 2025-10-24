@@ -401,9 +401,6 @@ public class SpawnManager : MonoBehaviour
         PathShape.ShapeType shapeType = (PathShape.ShapeType)Random.Range(0, 4);
         int colorId = Random.Range(0, palette ? palette.Count : 1);
 
-        // Ensure civilians never share the exact impostor combo (shape + color)
-        EnsureCivilianNotAllowedCombination(ref shapeType, ref colorId);
-
         // Create a unique path at the NPC’s spawn location
         var path = CreateRuntimePath(shapeType, pos);
 
@@ -448,69 +445,6 @@ public class SpawnManager : MonoBehaviour
     }
 }
 
-
-    bool MatchesAllowedPair(PathShape.ShapeType shapeType, int colorId)
-    {
-        var grs = GameRoundState.Instance;
-        if (grs == null || grs.allowedPairs == null || grs.allowedPairs.Length == 0)
-            return false;
-        return grs.MatchesAllowed(shapeType, colorId);
-    }
-
-    void EnsureCivilianNotAllowedCombination(ref PathShape.ShapeType shapeType, ref int colorId)
-    {
-        if (!MatchesAllowedPair(shapeType, colorId))
-            return;
-
-        int paletteEntries = palette ? palette.Count : 0;
-        const int shapeCount = 4;
-        int colorVariants = Mathf.Max(1, paletteEntries);
-
-        // Prefer keeping either shape or color the same to preserve visual variety.
-        List<Vector2Int> safeCombos = new List<Vector2Int>();
-
-        // Same shape, different safe color.
-        if (paletteEntries > 1)
-        {
-            for (int c = 0; c < paletteEntries; c++)
-            {
-                if (c == colorId) continue;
-                if (!MatchesAllowedPair(shapeType, c))
-                    safeCombos.Add(new Vector2Int((int)shapeType, c));
-            }
-        }
-
-        // Same color, different shape.
-        for (int s = 0; s < shapeCount; s++)
-        {
-            if (s == (int)shapeType) continue;
-            var candidateShape = (PathShape.ShapeType)s;
-            if (!MatchesAllowedPair(candidateShape, colorId))
-                safeCombos.Add(new Vector2Int(s, colorId));
-        }
-
-        // Full search fallback in case the quick passes found nothing.
-        if (safeCombos.Count == 0)
-        {
-            for (int s = 0; s < shapeCount; s++)
-            {
-                var candidateShape = (PathShape.ShapeType)s;
-                for (int c = 0; c < colorVariants; c++)
-                {
-                    int candidateColor = paletteEntries > 0 ? c : 0;
-                    if (!MatchesAllowedPair(candidateShape, candidateColor))
-                        safeCombos.Add(new Vector2Int(s, candidateColor));
-                }
-            }
-        }
-
-        if (safeCombos.Count == 0)
-            return; // Every combo is allowed; nothing to do.
-
-        var pick = safeCombos[Random.Range(0, safeCombos.Count)];
-        shapeType = (PathShape.ShapeType)pick.x;
-        colorId = pick.y;
-    }
 
     void ApplyNPCIdentity(GameObject npc, bool isImpostor, PathShape.ShapeType shapeType, int colorId)
     {

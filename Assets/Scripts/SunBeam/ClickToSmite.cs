@@ -107,7 +107,7 @@ public class ClickToSmite : MonoBehaviour
                     return;
                 }
 
-                bool correct = (grs != null) && grs.MatchesAllowed(id.shapeType, id.colorId);
+                bool correct = id.isImpostor && (grs != null) && grs.MatchesAllowed(id.shapeType, id.colorId);
 
                 if (correct)
                 {
