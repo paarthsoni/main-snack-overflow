@@ -1,5 +1,5 @@
-Rows after cleaning: 2
-Unique sessions: 1
+Rows after cleaning: 31
+Unique sessions: 13
 Levels: LvL1
-Corr(completed, accuracy_pct): nan
-Corr(completed, time_taken_s): nan
+Corr(completed, accuracy_pct): 0.537
+Corr(completed, time_taken_s): -0.177
